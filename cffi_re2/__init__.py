@@ -37,8 +37,8 @@ def force_str(s):
 
 class CRE2:
     def __init__(self, pattern):
-        pattern = force_str(pattern)
-        self.re2_obj = ffi.gc(libre2.RE2_new(pattern), libre2.RE2_delete)
+        self.pattern = pattern = force_str(pattern)
+        self.re2_obj = libre2.RE2_new(pattern)
         self.libre2 = libre2
 
     def search(self, data):

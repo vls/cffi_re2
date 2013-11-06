@@ -4,8 +4,17 @@
 
 import cffi
 import imp
-_f, soname, _ = imp.find_module('_cre2')
-_f.close()
+
+import pkg_resources
+import os
+dirname = pkg_resources.resource_filename('cffi_re2', '')
+dirname = os.path.abspath(os.path.join(dirname, '..'))
+import glob
+search_string = os.path.join(dirname, '_cre2*.so')
+flist = glob.glob(search_string)
+assert flist
+soname = flist[0]
+
 
 ffi = cffi.FFI()
 

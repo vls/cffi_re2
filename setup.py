@@ -16,7 +16,7 @@ metadata['packages'] = find_packages()
 
 mod_cre2 = Extension('_cre2', sources=['_cre2.cpp'], libraries = ['re2'], include_dirs = ['/usr/local/include'])
 
-metadata['install_requires'] = ['cffi>=0.7']
+metadata['install_requires'] = ['cffi==0.7']
 metadata['ext_modules'] = [mod_cre2]
 metadata['zip_safe'] = False
 setup(**metadata)

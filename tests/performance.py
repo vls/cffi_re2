@@ -99,7 +99,11 @@ def main():
                 #raise ValueError("re2 output is not the same as re output: %s" % testname)
                 print >> sys.stderr, "re2 output is not the same as re output: %s" % testname
 
-    benchmarks_to_ReST(benchmarks, modules)
+    txt = benchmarks_to_ReST(benchmarks, modules)
+
+    from docutils.core import publish_string
+    print publish_string(txt, writer_name='html')
+    print txt
 
 
 def benchmarks_to_ReST(benchmarks, modules):
@@ -128,19 +132,23 @@ def benchmarks_to_ReST(benchmarks, modules):
     for col in range(len(table[0])):
         col_sizes[col] = max(len(row[col]) for row in table)
 
-    def print_divider(symbol='-'):
-        print '+' + '+'.join(symbol*col_size for col_size in col_sizes) + '+'
-    def print_row(row):
-        print '|' + '|'.join(item.ljust(col_sizes[i]) for i, item in enumerate(row)) + '|'
+    def get_divider(symbol='-'):
+        s = '+' + '+'.join(symbol*col_size for col_size in col_sizes) + '+'
+        return s
+    def get_row(row):
+        s = '|' + '|'.join(item.ljust(col_sizes[i]) for i, item in enumerate(row)) + '|'
+        return s
 
-    print_divider()
-    print_row(table[0])
-    print_divider('=')
+    sarr = []
+    sarr.append(get_divider())
+    sarr.append(get_row(table[0]))
+    sarr.append(get_divider('='))
     for row in table[1:]:
-        print_row(row)
-        print_divider()
+        sarr.append(get_row(row))
+        sarr.append(get_divider())
 
 
+    return '\n'.join(sarr)
 
 
 

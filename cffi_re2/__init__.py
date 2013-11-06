@@ -7,15 +7,18 @@ import imp
 _f, soname, _ = imp.find_module('_cre2')
 _f.close()
 
-f = cffi.FFI()
+ffi = cffi.FFI()
 
-f.cdef('''
+ffi.cdef('''
 void* RE2_new(const char* pattern); 
 bool PartialMatch(void* re_obj, const char* data);
 void RE2_delete(void* re_obj);
+void RE2_delete_string_ptr(void* ptr);
+void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
+const char* get_c_str(void* ptr_str);
 ''')
 
-libre2 = f.dlopen(soname)
+libre2 = ffi.dlopen(soname)
 
 
 def force_str(s):
@@ -27,9 +30,17 @@ class CRE2:
     def __init__(self, pattern):
         pattern = force_str(pattern)
         self.re2_obj = libre2.RE2_new(pattern)
+        self.libre2 = libre2
 
     def search(self, data):
         return not not libre2.PartialMatch(self.re2_obj, data)
+
+    def sub(self, repl, str, count=0):
+        c_p_str = self.libre2.RE2_GlobalReplace(self.re2_obj, str, repl)
+
+        py_string = ffi.string(self.libre2.get_c_str(c_p_str))
+        self.libre2.RE2_delete_string_ptr(c_p_str)
+        return py_string
 
     def close(self):
         if self.re2_obj:

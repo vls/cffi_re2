@@ -4,6 +4,8 @@ python:
     - "2.7"
     - "pypy"
 
+env: LD_LIBRARY_PATH=/usr/local/lib
+
 before_install:
     - "tests/before_install.sh"
 

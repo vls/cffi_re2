@@ -2,7 +2,6 @@ language: python
 python:
     - "2.6"
     - "2.7"
-    - "pypy"
 
 env: LD_LIBRARY_PATH=/usr/local/lib
 

@@ -3,6 +3,8 @@
 
 import cffi_re2
 
+from nose.tools import raises
+
 def test_match_basic():
     robj = cffi_re2.compile('b+')
     flag = robj.search('abbcd')
@@ -23,4 +25,15 @@ def test_sub_chinese():
     robj = cffi_re2.compile('梦[^一-龥]*幻[^一-龥]*西[^一-龥]*游')
 
     assert robj.sub('倩女', '梦幻西游好玩吗?') == '倩女好玩吗?'
+
+@raises(ValueError)
+def test_invalid_regex():
+    p = '(?!=.*[没不])'
+    robj = cffi_re2.compile(p)
+    
+
+@raises(ValueError)
+def test_invalid_regex_2():
+    p = '(?<![没不])'
+    robj = cffi_re2.compile(p)
 

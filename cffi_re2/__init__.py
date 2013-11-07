@@ -25,6 +25,8 @@ void RE2_delete(void* re_obj);
 void RE2_delete_string_ptr(void* ptr);
 void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
 const char* get_c_str(void* ptr_str);
+const char* get_error_msg(void* re_obj);
+bool ok(void* re_obj);
 ''')
 
 libre2 = ffi.dlopen(soname)
@@ -39,6 +41,11 @@ class CRE2:
     def __init__(self, pattern):
         self.pattern = pattern = force_str(pattern)
         self.re2_obj = ffi.gc(libre2.RE2_new(pattern), libre2.RE2_delete)
+        flag = libre2.ok(self.re2_obj)
+        if not flag:
+            ret = libre2.get_error_msg(self.re2_obj)
+            raise ValueError(ffi.string(ret))
+
         self.libre2 = libre2
 
     def search(self, data):

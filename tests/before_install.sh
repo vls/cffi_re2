@@ -13,6 +13,5 @@ fi
 
 echo $libdir
 wget https://re2.googlecode.com/files/re2-20131024.tgz -O re2.tgz && tar zxvf re2.tgz && cd re2 && make && sudo make install && \
-sudo mkdir /usr/${libdir} && \
-sudo ln -sf /usr/local/lib/libre2.so /usr/${libdir}/libre2.so && \
-sudo ln -sf /usr/local/lib/libre2.so.0 /usr/${libdir}/libre2.so.0
+sudo ln -sf /usr/local/lib/libre2.so /${libdir}/libre2.so && \
+sudo ln -sf /usr/local/lib/libre2.so.0 /${libdir}/libre2.so.0

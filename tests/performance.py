@@ -79,15 +79,25 @@ def main():
             # what people do.
             current_re[0] = module.compile(method.pattern)
 
-            results[i] = method(current_re[0], **method.data)
+            try:
+                results[i] = method(current_re[0], **method.data)
+            except:
+                results[i] = -1
 
             # Run a test.
             t = Timer("test(current_re[0],**test.data)",
                       setup_code % testname)
-            benchmarks[testname][module.__name__] = (t.timeit(method.num_runs),
-                                                     method.__doc__.strip(),
-                                                     method.pattern,
-                                                     method.num_runs)
+            try:
+                benchmarks[testname][module.__name__] = (t.timeit(method.num_runs),
+                                                         method.__doc__.strip(),
+                                                         method.pattern,
+                                                         method.num_runs)
+            except:
+                benchmarks[testname][module.__name__] = (-1,
+                                                         method.__doc__.strip(),
+                                                         method.pattern,
+                                                         method.num_runs)
+                
 
         for i in xrange(len(results)):
             print >> sys.stderr, 'result', modules[i], results[i]
@@ -185,7 +195,7 @@ def getwikidata_big():
 
 @register_test("Findall URI|Email",
               r'([a-zA-Z][a-zA-Z0-9]*)://([^ /]+)(/[^ ]*)?|([^ @]+)@([^ @]+)',
-              3,
+              20,
               dataf=getwikidata)
 def findall_uriemail(pattern, dataf):
     """
@@ -204,7 +214,7 @@ TEST_RE = re.compile('test')
 @register_test("Chinese",
             #ur'梦[^一-龥]{0,4}幻[^一-龥]{0,4}西[^一-龥]{0,4}游',
             ur'梦[^一-龥]*幻[^一-龥]*西[^一-龥]*游',
-            3,
+            20,
             dataf=getwikidata)
 def findall_chinese(pattern, dataf):
     """

@@ -51,12 +51,6 @@ class CRE2:
         self.libre2.RE2_delete_string_ptr(c_p_str)
         return py_string
 
-    def close(self):
-        if self.re2_obj:
-            libre2.RE2_delete(self.re2_obj)
-
-    def __del__(self):
-        self.close()
 
 def compile(pattern):
     return CRE2(pattern)

@@ -9,6 +9,7 @@ before_install:
     - "tests/before_install.sh"
 
 install:
+    - "pip install cffi==0.7"
     - "python setup.py install"
 
 script: ./test.sh

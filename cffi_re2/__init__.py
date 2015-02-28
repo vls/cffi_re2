@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #encoding=utf-8
 
+__version__ = '0.1.4'
+
 
 import cffi
 import imp
@@ -13,24 +15,26 @@ dirname = os.path.abspath(os.path.join(dirname, '..'))
 import glob
 search_string = os.path.join(dirname, '_cre2*.so')
 flist = glob.glob(search_string)
-assert flist
-soname = flist[0]
+
+libre2 = None
+if flist:
+    soname = flist[0]
 
 
-ffi = cffi.FFI()
+    ffi = cffi.FFI()
 
-ffi.cdef('''
-void* RE2_new(const char* pattern); 
-bool PartialMatch(void* re_obj, const char* data);
-void RE2_delete(void* re_obj);
-void RE2_delete_string_ptr(void* ptr);
-void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
-const char* get_c_str(void* ptr_str);
-const char* get_error_msg(void* re_obj);
-bool ok(void* re_obj);
-''')
+    ffi.cdef('''
+    void* RE2_new(const char* pattern); 
+    bool PartialMatch(void* re_obj, const char* data);
+    void RE2_delete(void* re_obj);
+    void RE2_delete_string_ptr(void* ptr);
+    void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
+    const char* get_c_str(void* ptr_str);
+    const char* get_error_msg(void* re_obj);
+    bool ok(void* re_obj);
+    ''')
 
-libre2 = ffi.dlopen(soname)
+    libre2 = ffi.dlopen(soname)
 
 
 def force_str(s):

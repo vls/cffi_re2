@@ -7,6 +7,7 @@ import imp
 
 import pkg_resources
 import os
+import re
 dirname = pkg_resources.resource_filename('cffi_re2', '')
 dirname = os.path.abspath(os.path.join(dirname, '..'))
 import glob
@@ -37,9 +38,18 @@ def force_str(s):
         return s.encode('utf-8')
     return str(s)
 
+class MatchObject(object):
+    pass
+
+RE_COM = re.compile('\(\?\#.*?\)')  
+
 class CRE2:
-    def __init__(self, pattern):
+    def __init__(self, pattern, *args, **kwargs):
         self.pattern = pattern = force_str(pattern)
+
+        if 'compat_comment' in kwargs:
+            pattern = RE_COM.sub('', pattern)
+
         self.re2_obj = ffi.gc(libre2.RE2_new(pattern), libre2.RE2_delete)
         flag = libre2.ok(self.re2_obj)
         if not flag:
@@ -49,7 +59,12 @@ class CRE2:
         self.libre2 = libre2
 
     def search(self, data):
-        return not not libre2.PartialMatch(self.re2_obj, data)
+        flag_match = not not libre2.PartialMatch(self.re2_obj, data)
+        if flag_match:
+            m = MatchObject()
+            m.re = self
+            return m
+        
 
     def sub(self, repl, str, count=0):
         c_p_str = self.libre2.RE2_GlobalReplace(self.re2_obj, str, repl)
@@ -59,5 +74,5 @@ class CRE2:
         return py_string
 
 
-def compile(pattern):
-    return CRE2(pattern)
+def compile(pattern, *args, **kwargs):
+    return CRE2(pattern, *args, **kwargs)

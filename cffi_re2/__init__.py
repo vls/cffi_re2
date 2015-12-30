@@ -50,12 +50,6 @@ if flist:
 
     libre2 = ffi.dlopen(soname)
 
-
-def force_str(s):
-    if isinstance(s, six.text_type):
-        return s.encode('utf-8')
-    return str(s)
-
 class MatchObject(object):
     def __init__(self, re, groups):
         self.re = re

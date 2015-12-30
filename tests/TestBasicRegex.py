@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import cffi_re2
-from nose.tools import raises, assert_is_not_none, assert_is_none
+from nose.tools import raises, assert_is_not_none, assert_is_none, assert_equal
 
 class TestBasicRegex(object):
     def test_basic_search(self):
@@ -17,7 +17,9 @@ class TestBasicRegex(object):
         # Full match regex should match
         robj = cffi_re2.compile('[abcd]+')
         assert_is_not_none(robj.match('abbcd'))
-
+    def test_sub_basic(self):
+        robj = cffi_re2.compile('b+')
+        assert_equal(robj.sub('', 'abbcbbd'), 'acd')
 
 class TestChineseRegex(object):
     """Written by Github user @vls"""
@@ -26,10 +28,6 @@ class TestChineseRegex(object):
 
         assert robj.search('梦1幻2西3游')
         assert not robj.search('梦倩女幻幽魂西2游')
-    def test_sub_basic(self):
-        robj = cffi_re2.compile('b+')
-
-        assert robj.sub('', 'abbcbbd') == 'acd'
     def test_sub_chinese(self):
         robj = cffi_re2.compile('梦[^一-龥]*幻[^一-龥]*西[^一-龥]*游')
 

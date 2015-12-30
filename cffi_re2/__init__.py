@@ -97,13 +97,15 @@ class CRE2:
             data = data.encode("utf-8")
 
         matchobj = libre2.FindSingleMatch(self.re2_obj, data, fullMatch)
-        print(matchobj)
-        print(matchobj.hasMatch)
         if matchobj.hasMatch:
             # Capture groups
-            groups = [matchobj.groups[i] for i in range(matchobj.numGroups)]
-            return MatchObject(self, groups)
-        # else: return None
+            groups = [matchobj.groups[i].decode("utf-8") for i in range(matchobj.numGroups)]
+            ret = MatchObject(self, groups)
+        else:
+            ret = None
+        # Cleanup C API objects
+        libre2.FreeREMatchResult(matchobj)
+        return ret
 
     def sub(self, repl, s, count=0):
         # Convert all strings to UTF8
@@ -113,8 +115,9 @@ class CRE2:
         c_p_str = self.libre2.RE2_GlobalReplace(self.re2_obj, s, repl)
 
         py_string = ffi.string(self.libre2.get_c_str(c_p_str))
+        # Cleanup C API objects
         self.libre2.RE2_delete_string_ptr(c_p_str)
-        return py_string
+        return py_string.decode("utf-8")
 
 def compile(pattern, *args, **kwargs):
     return CRE2(pattern, *args, **kwargs)

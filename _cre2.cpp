@@ -88,10 +88,9 @@ extern "C" {
     string* RE2_GlobalReplace(re2::RE2* re_obj, const char* str, const char* rewrite) {
         string* ptr_s = new string(str);
         re2::StringPiece sp(rewrite);
-
+        
         re2::RE2::GlobalReplace(ptr_s, *re_obj, sp);
         return ptr_s;
-
     }
 
     const char* get_c_str(string* ptr_str) {

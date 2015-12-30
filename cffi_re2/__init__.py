@@ -29,6 +29,13 @@ if flist:
         char** groups;
     } REMatchResult;
 
+    typedef struct {
+        int numMatches;
+        bool hasGroupMatches;
+        char** matches;
+        char*** groupMatches;
+    } REMultiMatchResult;
+
     void FreeREMatchResult(REMatchResult mr);
 
     void* RE2_new(const char* pattern);

@@ -11,6 +11,30 @@ typedef struct {
 } REMatchResult;
 
 /**
+ * A multi match object which contains either:
+ *  - A list of group matches (individual groups)
+ *  - A list of regular matches (one group per match)
+ */
+typedef struct {
+    /**
+     * Length of either groupMatches or matches (depending on value of hasGroupMatches)
+     */
+    int numMatches;
+    /**
+     * If true, this object contains group matches instead of regular matches.
+     */
+    bool hasGroupMatches;
+    /**
+     * Only filled if this result does NOT have group matches (else NULL)
+     */
+    char** matches;
+    /**
+     * Only filled if this result has group matches (else NULL)
+     */
+    char*** groupMatches;
+} REMultiMatchResult;
+
+/**
  * Lookup table that maps the Python anchor arg to actual anchors.
  */
 static const re2::RE2::Anchor anchorLUT[] = {
@@ -26,6 +50,22 @@ RE2::Arg* stringPiecesToArgs(re2::StringPiece* spc, int n) {
         args[i] = &spc[i];
     }
     return args;
+}
+
+/**
+ * Copy a StringPiece array to a C string list,
+ * each level of which is allocated using new[]
+ */
+char** copyGroups(const re2::StringPiece* groupsSrc, int numGroups) {
+    char** groups = new char*[numGroups];
+    for (int i = 0; i < numGroups; ++i) {
+        char* group = new char[groupsSrc[i].size() + 1];
+        group[groupsSrc[i].size()] = 0; //Insert C terminator
+        //Copy actual string
+        memcpy(group, groupsSrc[i].data(), groupsSrc[i].size());
+        groups[i] = group;
+    }
+    return groups;
 }
 
 extern "C" {
@@ -65,14 +105,7 @@ extern "C" {
         }
         //Copy groups
         if(ret.hasMatch) {
-            ret.groups = new char*[ret.numGroups];
-            for (int i = 0; i < ret.numGroups; ++i) {
-                char* group = new char[groups[i].size() + 1];
-                group[groups[i].size()] = 0; //Insert C terminator
-                //Copy actual string
-                memcpy(group, groups[i].data(), groups[i].size());
-                ret.groups[i] = group;
-            }
+            ret.groups = copyGroups(groups, ret.numGroups);
         } else {
             ret.groups = NULL;
         }

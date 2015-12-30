@@ -73,18 +73,17 @@ class CRE2:
 
         self.libre2 = libre2
 
-    def match(self, data):
-        """
-        Perform a full regex match on the given data string
-        """
+    @staticmethod
+    def __convertToBinaryUTF8(data):
         if isinstance(data, six.text_type):
-            data = data.encode("utf-8")
+            return data.encode("utf-8")
+        return data
 
     def search(self, data):
-        return self.__search(data, False) # 0 => UNANCHORED
+        return self.__search(data, False)  # 0 => UNANCHORED
 
     def match(self, data):
-        return self.__search(data, True) # 0 => ANCHOR_BOTH
+        return self.__search(data, True)  # 0 => ANCHOR_BOTH
 
     def __search(self, data, fullMatch=False):
         """
@@ -92,6 +91,8 @@ class CRE2:
         mode, depending on the anchor argument
         """
         # RE2 needs binary data, so we'll need to encode it
+        data = CRE2.__convertToBinaryUTF8(data)
+
         if isinstance(data, six.text_type):
             data = data.encode("utf-8")
 
@@ -104,8 +105,12 @@ class CRE2:
             return MatchObject(self, groups)
         # else: return None
 
-    def sub(self, repl, str, count=0):
-        c_p_str = self.libre2.RE2_GlobalReplace(self.re2_obj, str, repl)
+    def sub(self, repl, s, count=0):
+        # Convert all strings to UTF8
+        repl = CRE2.__convertToBinaryUTF8(repl)
+        s = CRE2.__convertToBinaryUTF8(s)
+
+        c_p_str = self.libre2.RE2_GlobalReplace(self.re2_obj, s, repl)
 
         py_string = ffi.string(self.libre2.get_c_str(c_p_str))
         self.libre2.RE2_delete_string_ptr(c_p_str)

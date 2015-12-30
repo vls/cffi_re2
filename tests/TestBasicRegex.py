@@ -11,6 +11,9 @@ class TestBasicRegex(object):
         # Search-type regex should NOT match full string
         robj = cffi_re2.compile('b+')
         assert_is_none(robj.match('abbcd'))
+        # This regex only matches the left end
+        robj = cffi_re2.compile('[abc]+')
+        assert_is_none(robj.match('abbcd'))
         # Full match regex should match
         robj = cffi_re2.compile('[abcd]+')
         assert_is_not_none(robj.match('abbcd'))

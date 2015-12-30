@@ -10,6 +10,8 @@ import imp
 import pkg_resources
 import os
 import re
+import six
+
 dirname = pkg_resources.resource_filename('cffi_re2', '')
 dirname = os.path.abspath(os.path.join(dirname, '..'))
 import glob
@@ -38,7 +40,7 @@ if flist:
 
 
 def force_str(s):
-    if isinstance(s, unicode):
+    if isinstance(s, six.text_type):
         return s.encode('utf-8')
     return str(s)
 

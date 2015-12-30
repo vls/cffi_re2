@@ -67,7 +67,9 @@ extern "C" {
         if(ret.hasMatch) {
             ret.groups = new char*[ret.numGroups];
             for (int i = 0; i < ret.numGroups; ++i) {
-                char* group = new char[groups[i].size()];
+                char* group = new char[groups[i].size() + 1];
+                group[groups[i].size()] = 0; //Insert C terminator
+                //Copy actual string
                 memcpy(group, groups[i].data(), groups[i].size());
                 ret.groups[i] = group;
             }
@@ -88,7 +90,7 @@ extern "C" {
     string* RE2_GlobalReplace(re2::RE2* re_obj, const char* str, const char* rewrite) {
         string* ptr_s = new string(str);
         re2::StringPiece sp(rewrite);
-        
+
         re2::RE2::GlobalReplace(ptr_s, *re_obj, sp);
         return ptr_s;
     }

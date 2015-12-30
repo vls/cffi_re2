@@ -7,6 +7,7 @@ class TestBasicRegex(object):
     def test_basic_search(self):
         robj = cffi_re2.compile('b+')
         assert_is_not_none(robj.search('abbcd'))
+        
     def test_basic_match(self):
         # Search-type regex should NOT match full string
         robj = cffi_re2.compile('b+')
@@ -17,9 +18,16 @@ class TestBasicRegex(object):
         # Full match regex should match
         robj = cffi_re2.compile('[abcd]+')
         assert_is_not_none(robj.match('abbcd'))
+
     def test_sub_basic(self):
         robj = cffi_re2.compile('b+')
         assert_equal(robj.sub('', 'abbcbbd'), 'acd')
+
+    def test_basic_groups(self):
+        robj = cffi_re2.compile('a(b+)')
+        mo = robj.search("abbc")
+        assert_is_not_none(mo)
+        assert_equal(mo.groups(), ["bb"])
 
 class TestChineseRegex(object):
     """Written by Github user @vls"""
@@ -32,10 +40,12 @@ class TestChineseRegex(object):
         robj = cffi_re2.compile('梦[^一-龥]*幻[^一-龥]*西[^一-龥]*游')
 
         assert robj.sub('倩女', '梦幻西游好玩吗?') == '倩女好玩吗?'
+
     @raises(ValueError)
     def test_invalid_regex(self):
         p = '(?!=.*[没不])'
         robj = cffi_re2.compile(p)
+
     @raises(ValueError)
     def test_invalid_regex_2(self):
         p = '(?<![没不])'

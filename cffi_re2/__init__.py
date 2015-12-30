@@ -52,15 +52,20 @@ def force_str(s):
 class MatchObject(object):
     def __init__(self, re, groups):
         self.re = re
-        self.groups = groups
+        self._groups = groups
     def group(self, i):
-        return self.groups[i]
+        return self._groups[i]
+    def groups(self):
+        return self._groups
+    def __str__(self):
+        return "MatchObject(groups={0})".format(self._groups)
 
 RE_COM = re.compile('\(\?\#.*?\)')  
 
 class CRE2:
     def __init__(self, pattern, *args, **kwargs):
-        self.pattern = pattern = force_str(pattern)
+        pattern = CRE2.__convertToBinaryUTF8(pattern)
+        self.pattern = pattern
 
         if 'compat_comment' in kwargs:
             pattern = RE_COM.sub('', pattern)
@@ -99,7 +104,8 @@ class CRE2:
         matchobj = libre2.FindSingleMatch(self.re2_obj, data, fullMatch)
         if matchobj.hasMatch:
             # Capture groups
-            groups = [matchobj.groups[i].decode("utf-8") for i in range(matchobj.numGroups)]
+            groups = [ffi.string(matchobj.groups[i]).decode("utf-8")
+                      for i in range(matchobj.numGroups)]
             ret = MatchObject(self, groups)
         else:
             ret = None

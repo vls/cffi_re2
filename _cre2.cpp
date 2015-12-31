@@ -1,6 +1,7 @@
 #include <re2/re2.h>
 #include <string>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -21,13 +22,11 @@ typedef struct {
      */
     int numMatches;
     /**
-     * If true, this object contains group matches instead of regular matches.
+     * If this result contains group matches, contains the number of groups,
+     * i.e. the number of elements in every groupMatches element.
+     * Undefined if groupMatches == NULL
      */
-    bool hasGroupMatches;
-    /**
-     * Only filled if this result does NOT have group matches (else NULL)
-     */
-    char** matches;
+    int numGroups;
     /**
      * Only filled if this result has group matches (else NULL)
      */
@@ -79,16 +78,85 @@ extern "C" {
     }
 
     void FreeREMatchResult(REMatchResult mr) {
-        if(mr.groups != 0) {
+        if(mr.groups != NULL) {
             for (int i = 0; i < mr.numGroups; ++i) {
-                if(mr.groups[i] != 0) {
+                if(mr.groups[i] != NULL) {
                     delete[] mr.groups[i];
                 }
             }
             delete[] mr.groups;
-            mr.groups = 0;
+            mr.groups = NULL;
         }
     }
+
+    void FreeREMultiMatchResult(REMultiMatchResult mr) {
+        if(mr.groupMatches != NULL) {
+            for (int i = 0; i < mr.numMatches; ++i) {
+                if(mr.groupMatches[i] != NULL) {
+                    for (int j = 0; j < mr.numGroups; ++j) {
+                        if(mr.groupMatches[i][j] != NULL) {
+                            delete[] mr.groupMatches[i][j];
+                        }
+                    }
+                }
+            }
+            delete[] mr.groupMatches;
+            mr.groupMatches = NULL;
+        }
+    }
+
+    REMultiMatchResult FindAllMatches(re2::RE2* re_obj, const char* dataArg, int anchorArg) {
+        re2::StringPiece data(dataArg);
+        re2::RE2::Anchor anchor = anchorLUT[anchorArg];
+        //Initialize return arg
+        REMultiMatchResult ret;
+        ret.numMatches = 0;
+        ret.groupMatches = NULL;
+        //Map anchor for easier Python iface
+        ret.numGroups = re_obj->NumberOfCapturingGroups();
+        int pos = 0;
+        int endidx = data.size();
+        //Allocate temporary match array
+        int nmatch = 1 + ret.numGroups;
+        //We don't know the size of this in advance, so we'll need to allocate now
+        vector<re2::StringPiece*> allMatches;
+        /**
+         * Iterate over all non-overlapping (!) matches
+         */
+        while(true) {
+            //Perform match
+            re2::StringPiece* matchTmp = new re2::StringPiece[nmatch];
+            bool hasMatch = re_obj->Match(data, pos, endidx,
+                 anchor, matchTmp, nmatch);
+            if(!hasMatch) {
+                delete[] matchTmp;
+                break;
+            }
+            //Add matchlist
+            allMatches.push_back(matchTmp);
+            //Increment position pointer so we get the next hit
+            // We are returning non-overlapping matches, so this is OK
+            if(matchTmp[0].size() == 0) {
+                pos++;
+            } else {
+                pos += matchTmp[0].size();
+            }
+        }
+        //Compute final size
+        ret.numMatches = allMatches.size();
+        //Convert match vector to group vector (3D)
+        ret.groupMatches = new char**[allMatches.size()];
+        for (size_t i = 0; i < allMatches.size(); ++i) {
+            ret.groupMatches[i] = copyGroups(allMatches[i], nmatch);
+        }
+        //Cleanup
+        for (size_t i = 0; i < allMatches.size(); ++i) {
+            if(allMatches[i] != NULL) {
+                delete[] allMatches[i];
+            }
+        }
+    }
+
 
     REMatchResult FindSingleMatch(re2::RE2* re_obj, const char* dataArg, bool fullMatch) {
         re2::StringPiece data(dataArg);

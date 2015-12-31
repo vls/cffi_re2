@@ -37,9 +37,11 @@ if flist:
     } REMultiMatchResult;
 
     void FreeREMatchResult(REMatchResult mr);
+    void FreeREMultiMatchResult(REMultiMatchResult mr);
 
     void* RE2_new(const char* pattern);
     REMatchResult FindSingleMatch(void* re_obj, const char* data, bool fullMatch);
+    REMultiMatchResult FindAllMatches(void* re_obj, const char* data, int anchorArg);
     void RE2_delete(void* re_obj);
     void RE2_delete_string_ptr(void* ptr);
     void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
@@ -85,10 +87,10 @@ class CRE2:
             return data.encode("utf-8")
         return data
 
-    def search(self, data):
+    def search(self, data, flags=0):
         return self.__search(data, False)  # 0 => UNANCHORED
 
-    def match(self, data):
+    def match(self, data, flags=0):
         return self.__search(data, True)  # 0 => ANCHOR_BOTH
 
     def __search(self, data, fullMatch=False):
@@ -113,6 +115,32 @@ class CRE2:
         # Cleanup C API objects
         libre2.FreeREMatchResult(matchobj)
         return ret
+
+    def findall(self, data, flags=0):
+        return list(self.finditer(data, flags))
+
+    def finditer(self, data, flags=0):
+        data = CRE2.__convertToBinaryUTF8(data)
+
+        # Anchor currently fixed to 0 == UNANCHORED
+        matchobj = libre2.FindAllMatches(self.re2_obj, data, 0)
+
+        for tp in CRE2.__parseFindallMatchObj(matchobj):
+            if len(tp) == 0: # No groups, onlyf full match:
+                yield tp[0]
+            else:
+                yield tp
+
+        libre2.FreeREMultiMatchResult(matchobj)
+
+    @staticmethod
+    def __parseFindallMatchObj(matchobj):
+        # Define
+        n = matchobj.numMatches
+        m = matchobj.numGroups
+        # Iterate
+        for i in range(n):
+            yield tuple(ffi.string(matchobj.groups[i][j]) for j in range(m))
 
     def sub(self, repl, s, count=0):
         # Convert all strings to UTF8

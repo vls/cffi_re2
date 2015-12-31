@@ -7,7 +7,7 @@ class TestBasicRegex(object):
     def test_basic_search(self):
         robj = cffi_re2.compile('b+')
         assert_is_not_none(robj.search('abbcd'))
-        
+
     def test_basic_match(self):
         # Search-type regex should NOT match full string
         robj = cffi_re2.compile('b+')
@@ -26,6 +26,12 @@ class TestBasicRegex(object):
     def test_basic_groups(self):
         robj = cffi_re2.compile('a(b+)')
         mo = robj.search("abbc")
+        assert_is_not_none(mo)
+        assert_equal(mo.groups(), ["bb"])
+
+    def test_basic_findall(self):
+        robj = cffi_re2.compile('a(b+)')
+        mo = robj.findall("abbcdefabbbbca")
         assert_is_not_none(mo)
         assert_equal(mo.groups(), ["bb"])
 

@@ -9,7 +9,8 @@ from setuptools import setup, Extension
 from setuptools import find_packages
 import cffi_re2
 
-mod_cre2 = Extension('_cre2', sources=['_cre2.cpp'], libraries=['re2'], include_dirs = ['/usr/local/include'])
+mod_cre2 = Extension('_cre2', sources=['_cre2.cpp'], libraries=['re2'],
+    include_dirs = ['/usr/local/include'], extra_compile_args=["-g"])
 
 setup(
     name='cffi_re2',

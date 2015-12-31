@@ -107,6 +107,9 @@ extern "C" {
 
     REMultiMatchResult FindAllMatches(re2::RE2* re_obj, const char* dataArg, int anchorArg) {
         re2::StringPiece data(dataArg);
+        if(anchorArg >= 2) {
+            anchorArg = 0; //Should not happen
+        }
         re2::RE2::Anchor anchor = anchorLUT[anchorArg];
         //Initialize return arg
         REMultiMatchResult ret;
@@ -155,6 +158,7 @@ extern "C" {
                 delete[] allMatches[i];
             }
         }
+        return ret;
     }
 
 

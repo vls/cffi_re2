@@ -33,7 +33,7 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile('a(b+)')
         mo = robj.findall("abbcdefabbbbca")
         assert_is_not_none(mo)
-        assert_equal(mo.groups(), ["bb"])
+        assert_equal(mo, ["abb", "abbbb"])
 
 class TestChineseRegex(object):
     """Written by Github user @vls"""

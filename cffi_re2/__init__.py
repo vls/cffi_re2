@@ -31,8 +31,7 @@ if flist:
 
     typedef struct {
         int numMatches;
-        bool hasGroupMatches;
-        char** matches;
+        int numGroups;
         char*** groupMatches;
     } REMultiMatchResult;
 
@@ -126,7 +125,7 @@ class CRE2:
         matchobj = libre2.FindAllMatches(self.re2_obj, data, 0)
 
         for tp in CRE2.__parseFindallMatchObj(matchobj):
-            if len(tp) == 0: # No groups, onlyf full match:
+            if len(tp) == 1:  # No groups, onlyf full match:
                 yield tp[0]
             else:
                 yield tp
@@ -140,7 +139,7 @@ class CRE2:
         m = matchobj.numGroups
         # Iterate
         for i in range(n):
-            yield tuple(ffi.string(matchobj.groups[i][j]) for j in range(m))
+            yield tuple(ffi.string(matchobj.groupMatches[i][j]).decode("utf-8") for j in range(m))
 
     def sub(self, repl, s, count=0):
         # Convert all strings to UTF8

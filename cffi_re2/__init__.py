@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import imp
+import importlib
 from cffi import FFI
 import os
 import re
+import sys
 import six
 
 ffi = FFI()
@@ -34,7 +36,15 @@ const char* get_c_str(void* ptr_str);
 const char* get_error_msg(void* re_obj);
 bool ok(void* re_obj);
 ''')
-libre2 = ffi.dlopen(imp.find_module('_cffi_re2')[1])
+
+# Open native library
+if six.PY3:
+    soname = importlib.util.find_spec("cffi_re2._cre2").origin
+else:
+    curmodpath = sys.modules[__name__].__path__
+    soname = imp.find_module('_cre2', curmodpath)[1]
+
+libre2 = ffi.dlopen(soname)
 
 class MatchObject(object):
     def __init__(self, re, groups):
@@ -84,9 +94,6 @@ class CRE2:
         """
         # RE2 needs binary data, so we'll need to encode it
         data = CRE2.__convertToBinaryUTF8(data)
-
-        if isinstance(data, six.text_type):
-            data = data.encode("utf-8")
 
         matchobj = libre2.FindSingleMatch(self.re2_obj, data, fullMatch)
         if matchobj.hasMatch:

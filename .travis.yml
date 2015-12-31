@@ -10,6 +10,6 @@ before_install:
     - cd re2 && make && sudo make install
 
 install:
-    - pip install cffi >= 0.7 six
+    - pip install cffi 0.7 six
 
 script: python3 setup.py test

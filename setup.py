@@ -7,10 +7,9 @@ except ImportError:
     use_setuptools()
 from setuptools import setup, Extension
 from setuptools import find_packages
-import cffi_re2
 
-mod_cre2 = Extension('_cre2', sources=['_cre2.cpp'], libraries=['re2'],
-    include_dirs = ['/usr/local/include'], extra_compile_args=["-g"],
+mod_cre2 = Extension('cffi_re2._cre2', sources=['_cre2.cpp'], libraries=['re2'],
+    include_dirs=['/usr/local/include'], extra_compile_args=["-g"],
     extra_link_args=["-g"])
 
 setup(
@@ -23,7 +22,7 @@ setup(
     test_suite='nose.collector',
     tests_require=['nose'],
     setup_requires=['nose>=1.0'],
-    version=cffi_re2.__version__,
+    version='0.2.0',
     long_description=open("README.md").read(),
     description='Access re2 library using cffi',
     url="https://github.com/vls/cffi_re2"

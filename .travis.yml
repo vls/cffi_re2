@@ -6,8 +6,8 @@ python:
 env: LD_LIBRARY_PATH=/usr/local/lib
 dist: trusty
 before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install libre2-dev -qq
+    - git clone https://github.com/google/re2.git
+    - cd re2 && make && sudo make install
 
 install:
     - pip install cffi >= 0.7 six

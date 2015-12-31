@@ -1,15 +1,15 @@
 language: python
 python:
-    - "2.6"
-    - "2.7"
+    - "3.4"
+    - "3.5"
 
 env: LD_LIBRARY_PATH=/usr/local/lib
 
 before_install:
-    - "tests/before_install.sh"
+    - sudo apt-get update -qq
+    - sudo apt-get install libre2-dev -qq
 
 install:
-    - "pip install cffi==0.7"
-    - "python setup.py install"
+    - pip install cffi >= 0.7 six
 
-script: ./test.sh
+script: python3 setup.py test

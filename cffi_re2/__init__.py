@@ -38,7 +38,7 @@ bool ok(void* re_obj);
 ''')
 
 # Open native library
-if six.PY3:
+if sys.version_info >= (3, 4):
     soname = importlib.util.find_spec("cffi_re2._cre2").origin
 else:
     curmodpath = sys.modules[__name__].__path__

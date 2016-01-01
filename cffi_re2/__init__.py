@@ -8,6 +8,18 @@ import re
 import sys
 import six
 
+# Flags
+UNICODE = 1  # No effect. We always use unicode
+U = UNICODE
+IGNORECASE = 2
+I = IGNORECASE
+MULTILINE = 4
+M = MULTILINE
+DOTALL = 8
+S = DOTALL
+LOCALE = 16
+L = LOCALE
+
 ffi = FFI()
 libre2 = None
 ffi.cdef('''
@@ -26,7 +38,7 @@ typedef struct {
 void FreeREMatchResult(REMatchResult mr);
 void FreeREMultiMatchResult(REMultiMatchResult mr);
 
-void* RE2_new(const char* pattern);
+void* RE2_new(const char* pattern, int flags);
 REMatchResult FindSingleMatch(void* re_obj, const char* data, bool fullMatch);
 REMultiMatchResult FindAllMatches(void* re_obj, const char* data, int anchorArg);
 void RE2_delete(void* re_obj);
@@ -61,14 +73,14 @@ RE_COM = re.compile('\(\?\#.*?\)')
 
 
 class CRE2:
-    def __init__(self, pattern, *args, **kwargs):
+    def __init__(self, pattern, flags=0, *args, **kwargs):
         pattern = CRE2.__convertToBinaryUTF8(pattern)
         self.pattern = pattern
 
         if 'compat_comment' in kwargs:
             pattern = RE_COM.sub('', pattern)
 
-        self.re2_obj = ffi.gc(libre2.RE2_new(pattern), libre2.RE2_delete)
+        self.re2_obj = ffi.gc(libre2.RE2_new(pattern, flags), libre2.RE2_delete)
         flag = libre2.ok(self.re2_obj)
         if not flag:
             ret = libre2.get_error_msg(self.re2_obj)
@@ -153,7 +165,6 @@ def sub(pattern, repl, string, count=0, flags=0):
     """
     Module-level sub function. See re.sub() for details
     Count is currently unsupported.
-    Flags is currently unsupported.
     """
     rgx = compile(pattern)
     return rgx.sub(repl, string, count, flags)
@@ -161,8 +172,6 @@ def sub(pattern, repl, string, count=0, flags=0):
 def search(pattern, string, flags=0):
     """
     Module-level sub function. See re.search() for details
-    Count is currently unsupported.
-    Flags is currently unsupported.
     """
     rgx = compile(pattern)
     return rgx.search(string, flags)
@@ -170,8 +179,6 @@ def search(pattern, string, flags=0):
 def match(pattern, string, flags=0):
     """
     Module-level match function. See re.match() for details
-    Count is currently unsupported.
-    Flags is currently unsupported.
     """
     rgx = compile(pattern)
     return rgx.match(string, flags)
@@ -179,8 +186,6 @@ def match(pattern, string, flags=0):
 def finditer(pattern, string, flags=0):
     """
     Module-level finditer function. See re.finditer() for details
-    Count is currently unsupported.
-    Flags is currently unsupported.
     """
     rgx = compile(pattern)
     for result in rgx.finditer(string, flags):
@@ -189,8 +194,6 @@ def finditer(pattern, string, flags=0):
 def findall(pattern, string, flags=0):
     """
     Module-level findall function. See re.findall() for details
-    Count is currently unsupported.
-    Flags is currently unsupported.
     """
     rgx = compile(pattern)
     return rgx.findall(string, flags)

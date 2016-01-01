@@ -62,6 +62,26 @@ class TestBasicRegex(object):
         assert_is_none(cffi_re2.match(r'b+', 'abbcbbd'))
         assert_is_not_none(cffi_re2.match(r'b+', 'bbbbb'))
 
+class TestFlags(object):
+    def test_flag_ignorecase(self):
+        rgx_ci = cffi_re2.compile(r'a(b+)', flags=cffi_re2.IGNORECASE)
+        rgx_cs = cffi_re2.compile(r'a(b+)')
+        # Check case sensitive
+        assert_is_none(rgx_cs.match("AB"))
+        assert_is_none(rgx_cs.match("Ab"))
+        assert_is_none(rgx_cs.match("aB"))
+        assert_is_none(rgx_cs.match("aBb"))
+        assert_is_none(rgx_cs.match("abB"))
+        assert_is_not_none(rgx_cs.match("ab"))
+        assert_is_not_none(rgx_cs.match("abb"))
+        # Check case insensitive
+        assert_is_not_none(rgx_ci.match("AB"))
+        assert_is_not_none(rgx_ci.match("Ab"))
+        assert_is_not_none(rgx_ci.match("aB"))
+        assert_is_not_none(rgx_ci.match("aBb"))
+        assert_is_not_none(rgx_ci.match("abB"))
+        assert_is_not_none(rgx_ci.match("ab"))
+        assert_is_not_none(rgx_ci.match("abb"))
 
 class TestChineseRegex(object):
     """Written by Github user @vls"""

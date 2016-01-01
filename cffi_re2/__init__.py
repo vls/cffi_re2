@@ -45,6 +45,7 @@ void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
 const char* get_c_str(void* ptr_str);
 const char* get_error_msg(void* re_obj);
 bool ok(void* re_obj);
+void RE2_SetMaxMemory(int maxmem);
 ''')
 
 # Open native library
@@ -195,3 +196,14 @@ def findall(pattern, string, flags=0):
     """
     rgx = compile(pattern)
     return rgx.findall(string, flags)
+
+def set_max_memory_budget(maxmem):
+    """
+    Set the default maximum memory budget for new regular expressions.
+    The RE2 default is 8 MiB.
+    The cffi_re2 default is 128 MiB.
+    Under some circumstances it might be required to increase this hard limit.
+    Affects only regexes compiled after this call, so it is recommended to do this
+    directly after importing cffi_re2.
+    """
+    libre2.RE2_SetMaxMemory(maxmem)

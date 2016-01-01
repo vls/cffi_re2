@@ -5,6 +5,8 @@
 
 using namespace std;
 
+static int maxMemoryBudget = 128 << 20; // 128 MiB
+
 typedef struct {
     bool hasMatch;
     int numGroups;
@@ -75,6 +77,7 @@ extern "C" {
         if(caseInsensitive) {
             options.set_case_sensitive(false);
         }
+        options.set_max_mem(maxMemoryBudget);
         re2::RE2* ptr = new re2::RE2(pattern, options);
         return ptr;
     }
@@ -239,6 +242,10 @@ extern "C" {
             return false;
         }
         return re_obj->ok();
+    }
+
+    void RE2_SetMaxMemory(int maxmem) {
+        maxMemoryBudget = maxmem;
     }
 
 }

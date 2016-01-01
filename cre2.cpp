@@ -5,12 +5,6 @@
 
 using namespace std;
 
-//The flag values have to match the corresponding Python definition
-#define FLAG_UNICODE 1 // Always assumed
-#define FLAG_CASE_INSENSITIVE 2
-#define FLAG_MULTILINE 4
-#define FLAG_DOTALL 8
-
 typedef struct {
     bool hasMatch;
     int numGroups;
@@ -74,10 +68,10 @@ char** copyGroups(const re2::StringPiece* groupsSrc, int numGroups) {
 }
 
 extern "C" {
-    re2::RE2* RE2_new(const char* pattern, int flags) {
+    re2::RE2* RE2_new(const char* pattern, bool caseInsensitive) {
         re2::RE2::Options options;
         options.Copy(re2::RE2::Quiet);
-        if(flags & FLAG_CASE_INSENSITIVE) {
+        if(caseInsensitive) {
             options.set_case_sensitive(false);
         }
         re2::RE2* ptr = new re2::RE2(pattern, options);

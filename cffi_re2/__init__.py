@@ -7,18 +7,16 @@ import os
 import re
 import sys
 import six
+import sre_compile
 
-# Flags
-UNICODE = 1  # No effect. We always use unicode
-U = UNICODE
-IGNORECASE = 2
-I = IGNORECASE
-MULTILINE = 4
-M = MULTILINE
-DOTALL = 8
-S = DOTALL
-LOCALE = 16
-L = LOCALE
+# Flags, copied from re.py
+I = IGNORECASE = sre_compile.SRE_FLAG_IGNORECASE # ignore case
+L = LOCALE = sre_compile.SRE_FLAG_LOCALE # assume current 8-bit locale
+U = UNICODE = sre_compile.SRE_FLAG_UNICODE # assume unicode locale
+M = MULTILINE = sre_compile.SRE_FLAG_MULTILINE # make anchors look for newline
+S = DOTALL = sre_compile.SRE_FLAG_DOTALL # make dot match newline
+X = VERBOSE = sre_compile.SRE_FLAG_VERBOSE # ignore whitespace and comments
+
 
 ffi = FFI()
 libre2 = None
@@ -38,7 +36,7 @@ typedef struct {
 void FreeREMatchResult(REMatchResult mr);
 void FreeREMultiMatchResult(REMultiMatchResult mr);
 
-void* RE2_new(const char* pattern, int flags);
+void* RE2_new(const char* pattern, bool caseInsensitive);
 REMatchResult FindSingleMatch(void* re_obj, const char* data, bool fullMatch);
 REMultiMatchResult FindAllMatches(void* re_obj, const char* data, int anchorArg);
 void RE2_delete(void* re_obj);
@@ -80,7 +78,7 @@ class CRE2:
         if 'compat_comment' in kwargs:
             pattern = RE_COM.sub('', pattern)
 
-        self.re2_obj = ffi.gc(libre2.RE2_new(pattern, flags), libre2.RE2_delete)
+        self.re2_obj = ffi.gc(libre2.RE2_new(pattern, flags & I > 0), libre2.RE2_delete)
         flag = libre2.ok(self.re2_obj)
         if not flag:
             ret = libre2.get_error_msg(self.re2_obj)

@@ -103,6 +103,8 @@ extern "C" {
                             delete[] mr.groupMatches[i][j];
                         }
                     }
+                    delete[] mr.groupMatches[i];
+                    mr.groupMatches[i] = NULL;
                 }
             }
             delete[] mr.groupMatches;

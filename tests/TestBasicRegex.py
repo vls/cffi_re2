@@ -5,35 +5,63 @@ from nose.tools import raises, assert_is_not_none, assert_is_none, assert_equal,
 
 class TestBasicRegex(object):
     def test_basic_search(self):
-        robj = cffi_re2.compile('b+')
+        robj = cffi_re2.compile(r'b+')
         assert_is_not_none(robj.search('abbcd'))
 
     def test_basic_match(self):
         # Search-type regex should NOT match full string
-        robj = cffi_re2.compile('b+')
+        robj = cffi_re2.compile(r'b+')
         assert_is_none(robj.match('abbcd'))
         # This regex only matches the left end
-        robj = cffi_re2.compile('[abc]+')
+        robj = cffi_re2.compile(r'[abc]+')
         assert_is_none(robj.match('abbcd'))
         # Full match regex should match
-        robj = cffi_re2.compile('[abcd]+')
+        robj = cffi_re2.compile(r'[abcd]+')
         assert_is_not_none(robj.match('abbcd'))
 
     def test_sub_basic(self):
-        robj = cffi_re2.compile('b+')
+        robj = cffi_re2.compile(r'b+')
         assert_equal(robj.sub('', 'abbcbbd'), 'acd')
 
     def test_basic_groups(self):
-        robj = cffi_re2.compile('a(b+)')
+        robj = cffi_re2.compile(r'a(b+)')
         mo = robj.search("abbc")
         assert_is_not_none(mo)
         assert_equal(mo.groups(), ["bb"])
 
     def test_basic_findall(self):
-        robj = cffi_re2.compile('a(b+)')
+        robj = cffi_re2.compile(r'a(b+)')
         mo = robj.findall("abbcdefabbbbca")
         assert_is_not_none(mo)
         assert_equal(mo, ["abb", "abbbb"])
+
+    def test_medium_complexity(self):
+        """Check some medium complexity regexes. Examples from github.com/ulikoehler/KATranslationCheck"""
+        # 1
+        rgx = cffi_re2.compile(r"\b[Ii]nto\b")
+        assert_is_not_none(rgx.search("Into the darkness"))
+        assert_is_not_none(rgx.search("I went into the darkness"))
+        assert_is_none(rgx.search("abcde beintoaqe aqet"))
+        # 2
+        rgx = cffi_re2.compile(r"\d+\$\s*dollars?")
+        assert_is_not_none(rgx.search("12$ dollars"))
+        assert_is_not_none(rgx.match("12$ dollars"))
+        assert_is_not_none(rgx.match("1$ dollar"))
+        assert_is_not_none(rgx.match("1$  dollar"))
+        assert_is_not_none(rgx.match("1$  dollars"))
+
+    def test_module_level_functions(self):
+        """
+        Quick test of module-level functions.
+        These are generally expected to call the compiled counterparts,
+         so these tests do not check all aspects
+        """
+        assert_equal(cffi_re2.findall(r'a(b+)', "abbcdefabbbbca"), ["abb", "abbbb"])
+        assert_equal(cffi_re2.sub(r'b+', '', 'abbcbbd'), 'acd')
+        assert_is_not_none(cffi_re2.search(r'b+', 'abbcbbd'))
+        assert_is_none(cffi_re2.match(r'b+', 'abbcbbd'))
+        assert_is_not_none(cffi_re2.match(r'b+', 'bbbbb'))
+
 
 class TestChineseRegex(object):
     """Written by Github user @vls"""

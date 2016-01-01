@@ -59,6 +59,7 @@ class MatchObject(object):
 
 RE_COM = re.compile('\(\?\#.*?\)')
 
+
 class CRE2:
     def __init__(self, pattern, *args, **kwargs):
         pattern = CRE2.__convertToBinaryUTF8(pattern)
@@ -133,7 +134,7 @@ class CRE2:
         for i in range(n):
             yield tuple(ffi.string(matchobj.groupMatches[i][j]).decode("utf-8") for j in range(m))
 
-    def sub(self, repl, s, count=0):
+    def sub(self, repl, s, count=0, flags=0):
         # Convert all strings to UTF8
         repl = CRE2.__convertToBinaryUTF8(repl)
         s = CRE2.__convertToBinaryUTF8(s)
@@ -147,3 +148,49 @@ class CRE2:
 
 def compile(pattern, *args, **kwargs):
     return CRE2(pattern, *args, **kwargs)
+
+def sub(pattern, repl, string, count=0, flags=0):
+    """
+    Module-level sub function. See re.sub() for details
+    Count is currently unsupported.
+    Flags is currently unsupported.
+    """
+    rgx = compile(pattern)
+    return rgx.sub(repl, string, count, flags)
+
+def search(pattern, string, flags=0):
+    """
+    Module-level sub function. See re.search() for details
+    Count is currently unsupported.
+    Flags is currently unsupported.
+    """
+    rgx = compile(pattern)
+    return rgx.search(string, flags)
+
+def match(pattern, string, flags=0):
+    """
+    Module-level match function. See re.match() for details
+    Count is currently unsupported.
+    Flags is currently unsupported.
+    """
+    rgx = compile(pattern)
+    return rgx.match(string, flags)
+
+def finditer(pattern, string, flags=0):
+    """
+    Module-level finditer function. See re.finditer() for details
+    Count is currently unsupported.
+    Flags is currently unsupported.
+    """
+    rgx = compile(pattern)
+    for result in rgx.finditer(string, flags):
+        yield result
+
+def findall(pattern, string, flags=0):
+    """
+    Module-level findall function. See re.findall() for details
+    Count is currently unsupported.
+    Flags is currently unsupported.
+    """
+    rgx = compile(pattern)
+    return rgx.findall(string, flags)

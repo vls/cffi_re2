@@ -84,7 +84,7 @@ class CRE2:
         flag = libre2.ok(self.re2_obj)
         if not flag:
             ret = libre2.get_error_msg(self.re2_obj)
-            raise ValueError(ffi.string(ret))
+            raise ValueError(ffi.string(ret).decode("utf-8"))
 
         self.libre2 = libre2
 

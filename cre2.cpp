@@ -25,8 +25,9 @@ typedef struct {
      * If this result contains group matches, contains the number of groups,
      * i.e. the number of elements in every groupMatches element.
      * Undefined if groupMatches == NULL
+     * At least one (in case )
      */
-    int numGroups;
+    int numElements;
     /**
      * Only filled if this result has group matches (else NULL)
      */
@@ -98,7 +99,7 @@ extern "C" {
         if(mr.groupMatches != NULL) {
             for (int i = 0; i < mr.numMatches; ++i) {
                 if(mr.groupMatches[i] != NULL) {
-                    for (int j = 0; j < mr.numGroups; ++j) {
+                    for (int j = 0; j < mr.numElements; ++j) {
                         if(mr.groupMatches[i][j] != NULL) {
                             delete[] mr.groupMatches[i][j];
                         }
@@ -123,11 +124,12 @@ extern "C" {
         ret.numMatches = 0;
         ret.groupMatches = NULL;
         //Map anchor for easier Python iface
-        ret.numGroups = re_obj->NumberOfCapturingGroups();
+        int numGroups = re_obj->NumberOfCapturingGroups();
+        ret.numElements = max(1, numGroups);
         int pos = 0;
         int endidx = data.size();
         //Allocate temporary match array
-        int nmatch = 1 + ret.numGroups;
+        int nmatch = 1 + numGroups;
         //We don't know the size of this in advance, so we'll need to allocate now
         vector<re2::StringPiece*> allMatches;
         /**
@@ -157,7 +159,13 @@ extern "C" {
         //Convert match vector to group vector (3D)
         ret.groupMatches = new char**[allMatches.size()];
         for (size_t i = 0; i < allMatches.size(); ++i) {
-            ret.groupMatches[i] = copyGroups(allMatches[i], nmatch);
+            //re.findall behaviour: 0 groups -> 1 result,
+            // 1 group -> 1 result, n > 1 groups -> n results
+            if(numGroups >= 1) { //Do not emit full match
+                ret.groupMatches[i] = copyGroups(allMatches[i] + 1, ret.numElements);
+            } else { //Emit only full match
+                ret.groupMatches[i] = copyGroups(allMatches[i], 1);
+            }
         }
         //Cleanup
         for (size_t i = 0; i < allMatches.size(); ++i) {

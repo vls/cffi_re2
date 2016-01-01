@@ -33,7 +33,17 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile(r'a(b+)')
         mo = robj.findall("abbcdefabbbbca")
         assert_is_not_none(mo)
+        assert_equal(mo, ["bb", "bbbb"])        
+
+    def test_findall_subgroups(self):
+        mo = cffi_re2.findall(r'ab+', "abbcdefabbbbca")
         assert_equal(mo, ["abb", "abbbb"])
+        mo = cffi_re2.findall(r'a(b+)', "abbcdefabbbbca")
+        assert_equal(mo, ["bb", "bbbb"])
+        mo = cffi_re2.findall(r'(a)(b+)', "abbcdefabbbbca")
+        assert_equal(mo, [("a", "bb"), ("a", "bbbb")])
+        mo = cffi_re2.findall(r'(a)(b)(b+)', "abbcdefabbbbca")
+        assert_equal(mo, [("a", "b", "b"), ("a", "b", "bbb")])
 
     def test_medium_complexity(self):
         """Check some medium complexity regexes. Examples from github.com/ulikoehler/KATranslationCheck"""
@@ -56,7 +66,7 @@ class TestBasicRegex(object):
         These are generally expected to call the compiled counterparts,
          so these tests do not check all aspects
         """
-        assert_equal(cffi_re2.findall(r'a(b+)', "abbcdefabbbbca"), ["abb", "abbbb"])
+        assert_equal(cffi_re2.findall(r'a(b+)', "abbcdefabbbbca"), ["bb", "bbbb"])
         assert_equal(cffi_re2.sub(r'b+', '', 'abbcbbd'), 'acd')
         assert_is_not_none(cffi_re2.search(r'b+', 'abbcbbd'))
         assert_is_none(cffi_re2.match(r'b+', 'abbcbbd'))

@@ -43,18 +43,6 @@ static const re2::RE2::Anchor anchorLUT[] = {
     re2::RE2::UNANCHORED, re2::RE2::ANCHOR_BOTH, re2::RE2::ANCHOR_START};
 
 /**
- * Create arg array from StringPiece array.
- * Caller must deallocate args with delete[]
- */
-RE2::Arg* stringPiecesToArgs(re2::StringPiece* spc, int n) {
-    RE2::Arg* args = new RE2::Arg[n]();
-    for (int i = 0; i < n; ++i) {
-        args[i] = &spc[i];
-    }
-    return args;
-}
-
-/**
  * Copy a StringPiece array to a C string list,
  * each level of which is allocated using new[]
  */

@@ -27,13 +27,13 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile(r'a(b+)')
         mo = robj.search("abbc")
         assert_is_not_none(mo)
-        assert_equal(mo.groups(), ["bb"])
+        assert_equal(mo.groups(), ("bb",))
 
     def test_basic_findall(self):
         robj = cffi_re2.compile(r'a(b+)')
         mo = robj.findall("abbcdefabbbbca")
         assert_is_not_none(mo)
-        assert_equal(mo, ["bb", "bbbb"])        
+        assert_equal(mo, ["bb", "bbbb"])
 
     def test_findall_subgroups(self):
         mo = cffi_re2.findall(r'ab+', "abbcdefabbbbca")

@@ -58,8 +58,9 @@ else:
 libre2 = ffi.dlopen(soname)
 
 class MatchObject(object):
-    def __init__(self, re, groups):
+    def __init__(self, re, fullMatch, groups):
         self.re = re
+        self.match = fullMatch
         self._groups = groups
     def group(self, i):
         return self._groups[i]
@@ -112,7 +113,7 @@ class CRE2:
             # Capture groups
             groups = [ffi.string(matchobj.groups[i]).decode("utf-8")
                       for i in range(matchobj.numGroups)]
-            ret = MatchObject(self, groups)
+            ret = MatchObject(self, groups[0], tuple(groups[1:]))
         else:
             ret = None
         # Cleanup C API objects

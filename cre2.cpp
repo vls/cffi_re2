@@ -47,7 +47,7 @@ static const re2::RE2::Anchor anchorLUT[] = {
  * Caller must deallocate args with delete[]
  */
 RE2::Arg* stringPiecesToArgs(re2::StringPiece* spc, int n) {
-    RE2::Arg* args = new RE2::Arg[n];
+    RE2::Arg* args = new RE2::Arg[n]();
     for (int i = 0; i < n; ++i) {
         args[i] = &spc[i];
     }
@@ -179,20 +179,16 @@ extern "C" {
         return ret;
     }
 
-
     REMatchResult FindSingleMatch(re2::RE2* re_obj, const char* dataArg, bool fullMatch) {
         re2::StringPiece data(dataArg);
         REMatchResult ret;
-        ret.numGroups = re_obj->NumberOfCapturingGroups();
+        ret.numGroups = re_obj->NumberOfCapturingGroups() + 1;
         //Declare group target array
-        re2::StringPiece* groups = new re2::StringPiece[ret.numGroups];
-        RE2::Arg* args = stringPiecesToArgs(groups, ret.numGroups);
+        re2::StringPiece* groups = new re2::StringPiece[ret.numGroups]();
         //Perform either
-        if(fullMatch) {
-            ret.hasMatch = re2::RE2::FullMatchN(data, *re_obj, &args, ret.numGroups);
-        } else {
-            ret.hasMatch = re2::RE2::PartialMatchN(data, *re_obj, &args, ret.numGroups);
-        }
+        re2::RE2::Anchor anchor = fullMatch ? re2::RE2::ANCHOR_BOTH : re2::RE2::UNANCHORED;
+        ret.hasMatch = re_obj->Match(data, 0, data.size(),
+                anchor, groups, ret.numGroups);
         //Copy groups
         if(ret.hasMatch) {
             ret.groups = copyGroups(groups, ret.numGroups);
@@ -201,7 +197,6 @@ extern "C" {
         }
         //Cleanup
         delete[] groups;
-        delete[] args;
         //Return
         return ret;
     }

@@ -142,7 +142,7 @@ extern "C" {
             if(matchTmp[0].size() == 0) {
                 pos++;
             } else {
-                pos += matchTmp[0].size();
+                pos += matchTmp[0].data() - dataArg + matchTmp[0].size();
             }
         }
         //Compute final size

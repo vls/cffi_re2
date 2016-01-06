@@ -1,15 +1,17 @@
 language: python
 python:
-    - "2.6"
     - "2.7"
-
+    - "3.4"
+    - "3.5"
+    - "pypy"
+    - "pypy3"
 env: LD_LIBRARY_PATH=/usr/local/lib
-
+dist: trusty
 before_install:
-    - "tests/before_install.sh"
+    - git clone https://github.com/google/re2.git
+    - cd re2 && make && sudo make install && cd ..
 
 install:
-    - "pip install cffi==0.7"
-    - "python setup.py install"
+    - pip install cffi six
 
-script: ./test.sh
+script: python3 setup.py test

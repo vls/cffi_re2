@@ -25,7 +25,7 @@ See the [re2 repository](https://github.com/google/re2) for further information.
 After installing re2, you can install cffi_re2:
 
 ```bash
-pip install https://github.com/ulikoehler/cffi_re2
+pip install cffi_re2
 ```
 or from a local copy:
 ```bash

@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import cffi_re2
-from nose.tools import raises, assert_is_not_none, assert_is_none, assert_equal, assert_true, assert_false
+import sys
+if sys.version_info < (2, 7):
+    from nose.tools import raises
+    from nose_extra_tools import assert_is_not_none, assert_is_none, assert_equal, assert_true, assert_false
+else:
+    from nose.tools import raises, assert_is_not_none, assert_is_none, assert_equal, assert_true, assert_false
 
 class TestBasicRegex(object):
     def test_basic_search(self):

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import imp
-import importlib
 from cffi import FFI
 import os
 import re
@@ -50,6 +49,7 @@ void RE2_SetMaxMemory(int maxmem);
 
 # Open native library
 if sys.version_info >= (3, 4):
+    import importlib
     soname = importlib.util.find_spec("cffi_re2._cre2").origin
 else:
     curmodpath = sys.modules[__name__].__path__

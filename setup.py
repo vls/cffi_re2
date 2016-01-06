@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 try:
     import setuptools
 except ImportError:
@@ -12,6 +13,10 @@ mod_cre2 = Extension('cffi_re2._cre2', sources=['cre2.cpp'], libraries=['re2'],
     include_dirs=['/usr/local/include'], extra_compile_args=["-g"],
     extra_link_args=["-g"])
 
+tests_require=['nose']
+if sys.version_info < (2, 7):
+    tests_require.append('nose_extra_tools')
+
 setup(
     name='cffi_re2',
     license='MIT license',
@@ -20,7 +25,7 @@ setup(
     ext_modules=[mod_cre2],
     zip_safe=False,
     test_suite='nose.collector',
-    tests_require=['nose'],
+    tests_require=tests_require,
     setup_requires=['nose>=1.0'],
     version='0.2.0',
     long_description=open("README.md").read(),

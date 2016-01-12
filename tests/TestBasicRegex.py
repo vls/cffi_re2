@@ -59,7 +59,7 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile(r'a(b+)')
         mo = robj.search("abbc")
         assert_is_not_none(mo)
-        assert_equal(mo.groups(), ("bb",))
+        assert_equal(mo.groups(), [("bb",)])
 
     def test_basic_findall(self):
         robj = cffi_re2.compile(r'a(b+)')

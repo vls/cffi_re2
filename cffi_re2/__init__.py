@@ -77,9 +77,7 @@ class MatchObject(object):
         return self.s[start:end]
 
     def groups(self):
-        if self.numGroups == 2:
-            return (self.group(1),)
-        return tuple(self.group(i) for i in range(self.numGroups))
+        return tuple(self.group(i) for i in range(1, self.numGroups))
 
     def __str__(self):
         return "MatchObject(groups={0})".format(self.groups())

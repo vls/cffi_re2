@@ -15,7 +15,6 @@ typedef struct {
 typedef struct {
     bool hasMatch;
     int numGroups;
-    char** groups;
     Range* ranges;
 } REMatchResult;
 
@@ -36,10 +35,6 @@ typedef struct {
      * At least one (in case )
      */
     int numElements;
-    /**
-     * Only filled if this result has group matches (else NULL)
-     */
-    char*** groupMatches;
     /**
      * Match ranges
      */
@@ -120,15 +115,6 @@ extern "C" {
     }
 
     void FreeREMatchResult(REMatchResult mr) {
-        if(mr.groups != NULL) {
-            for (int i = 0; i < mr.numGroups; ++i) {
-                if(mr.groups[i] != NULL) {
-                    delete[] mr.groups[i];
-                }
-            }
-            delete[] mr.groups;
-            mr.groups = NULL;
-        }
         if(mr.ranges != NULL) {
             delete[] mr.ranges;
             mr.ranges = NULL;
@@ -136,26 +122,13 @@ extern "C" {
     }
 
     void FreeREMultiMatchResult(REMultiMatchResult mr) {
-        if(mr.groupMatches != NULL) {
+        if(mr.ranges != NULL) {
             for (int i = 0; i < mr.numMatches; ++i) {
-                if(mr.groupMatches[i] != NULL) {
-                    for (int j = 0; j < mr.numElements; ++j) {
-                        if(mr.groupMatches[i][j] != NULL) {
-                            delete[] mr.groupMatches[i][j];
-                        }
-                    }
-                    delete[] mr.groupMatches[i];
-                    mr.groupMatches[i] = NULL;
-                }
                 if(mr.ranges[i] != NULL) {
                     delete[] mr.ranges[i];
                     mr.ranges[i] = NULL;
                 }
             }
-            delete[] mr.groupMatches;
-            mr.groupMatches = NULL;
-        }
-        if(mr.ranges != NULL) {
             delete[] mr.ranges;
             mr.ranges = NULL;
         }
@@ -172,29 +145,24 @@ extern "C" {
         //Initialize return arg
         REMultiMatchResult ret;
         ret.numMatches = 0;
-        ret.groupMatches = NULL;
         //Map anchor for easier Python iface
         int numGroups = re_obj->NumberOfCapturingGroups();
         ret.numElements = 1 + numGroups;
         int pos = startpos;
         int endidx = data.size();
         //We don't know the size of this in advance, so we'll need to allocate now
-        vector<re2::StringPiece*> allMatches;
+        re2::StringPiece* matchTmp = new re2::StringPiece[ret.numElements];
         vector<Range*> allRanges;
         /**
          * Iterate over all non-overlapping (!) matches
          */
         while(true) {
             //Perform match
-            re2::StringPiece* matchTmp = new re2::StringPiece[ret.numElements];
             bool hasMatch = re_obj->Match(data, pos, endidx,
                  anchor, matchTmp, ret.numElements);
             if(!hasMatch) {
-                delete[] matchTmp;
                 break;
             }
-            //Add matchlist
-            allMatches.push_back(matchTmp);
             //Increment position pointer so we get the next hit
             // We are returning non-overlapping matches, so this is OK
             if(matchTmp[0].size() == 0) { //Zero-length match
@@ -212,27 +180,18 @@ extern "C" {
             allRanges.push_back(rangeTmp);
         }
         //Compute final size
-        ret.numMatches = allMatches.size();
+        ret.numMatches = allRanges.size();
         //Convert match vector to group vector (3D)
-        ret.groupMatches = new char**[allMatches.size()];
-        ret.ranges = new Range*[allMatches.size()];
-        for (size_t i = 0; i < allMatches.size(); ++i) {
-            /*
-             * Always return full match plus all groups
-             * This does not match the re group behaviour, but
-             *  this is handled in Python code
-             */
-            ret.groupMatches[i] = copyGroups(allMatches[i], ret.numElements);
+        ret.ranges = new Range*[allRanges.size()];
+        for (size_t i = 0; i < allRanges.size(); ++i) {
             //Copy ranges
             ret.ranges[i] = new Range[ret.numElements];
             memcpy(ret.ranges[i], allRanges[i], sizeof(Range*) * ret.numElements);
         }
         //Cleanup
         delete[] utf8LUT;
-        for (size_t i = 0; i < allMatches.size(); ++i) {
-            if(allMatches[i] != NULL) {
-                delete[] allMatches[i];
-            }
+        delete[] matchTmp;
+        for (size_t i = 0; i < allRanges.size(); ++i) {
             if(allRanges[i] != NULL) {
                 delete[] allRanges[i];
             }
@@ -254,7 +213,6 @@ extern "C" {
                 anchor, groups, ret.numGroups);
         //Copy groups
         if(ret.hasMatch) {
-            ret.groups = copyGroups(groups, ret.numGroups);
             //Copy ranges
             ret.ranges = new Range[ret.numGroups];
             for (int i = 0; i < ret.numGroups; ++i) {
@@ -263,7 +221,6 @@ extern "C" {
                 ret.ranges[i].end = utf8LUT[rawStart + groups[i].size()];
             }
         } else {
-            ret.groups = NULL;
             ret.ranges = NULL;
         }
         //Cleanup

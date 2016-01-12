@@ -28,14 +28,12 @@ typedef struct {
 typedef struct {
     bool hasMatch;
     int numGroups;
-    char** groups;
     Range* ranges;
 } REMatchResult;
 
 typedef struct {
     int numMatches;
     int numGroups;
-    char*** groupMatches;
     Range** ranges;
 } REMultiMatchResult;
 
@@ -109,6 +107,11 @@ class CRE2:
             return data.encode("utf-8")
         return data
 
+    @staticmethod
+    def __rangeToTuple(r):
+        """Convert a CFFI/CRE2 range object to a Python tuple"""
+        return (r.start, r.end)
+
     def search(self, data, flags=0):
         return self.__search(data, False)  # 0 => UNANCHORED
 
@@ -126,9 +129,9 @@ class CRE2:
         matchobj = libre2.FindSingleMatch(self.re2_obj, data, fullMatch, startidx)
         if matchobj.hasMatch:
             # Capture groups
-            groups = [ffi.string(matchobj.groups[i]).decode("utf-8")
+            groups = [CRE2.__rangeToTuple(matchobj.ranges[i])
                       for i in range(matchobj.numGroups)]
-            ret = MatchObject(self, groups[0], tuple(groups[1:]))
+            ret = MatchObject(self, data, groups)
         else:
             ret = None
         # Cleanup C API objects
@@ -170,7 +173,7 @@ class CRE2:
         m = matchobj.numGroups
         # Iterate
         for i in range(n):
-            yield tuple(ffi.string(matchobj.groupMatches[i][j]).decode("utf-8")
+            yield tuple(CRE2.__rangeToTuple(matchobj.ranges[i][j])
                         for j in range(m))
 
     def _sub_function(self, fn, s, count=0, flags=0):

@@ -93,11 +93,18 @@ class TestBasicRegex(object):
         assert_is_not_none(rgx.match("1$  dollars"))
 
     def test_sub_function(self):
+        # Python re example
         def dashrepl(matchobj):
-            if matchobj.group(0) == '-': return ' '
-            else: return '-'
-        #cffi_re2.sub('-{1,2}', dashrepl, 'pro----gram-files')
-        #'pro--gram files'
+            if matchobj.group(0) == '-':
+                return ' '
+            else:
+                return '-'
+
+        assert_equal(cffi_re2.sub('-{1,2}', dashrepl, 'pro-gram--files'),
+                     'pro gram-files')
+        #Does not work yet
+        #assert_equal(cffi_re2.sub('-{1,2}', dashrepl, 'pro----gram-files'),
+        #             'pro--gram files')
 
     def test_module_level_functions(self):
         """

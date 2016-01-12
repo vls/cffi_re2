@@ -104,7 +104,7 @@ extern "C" {
         }
     }
 
-    REMultiMatchResult FindAllMatches(re2::RE2* re_obj, const char* dataArg, int anchorArg) {
+    REMultiMatchResult FindAllMatches(re2::RE2* re_obj, const char* dataArg, int anchorArg, int startpos) {
         re2::StringPiece data(dataArg);
         if(anchorArg >= 2) {
             anchorArg = 0; //Should not happen
@@ -116,11 +116,9 @@ extern "C" {
         ret.groupMatches = NULL;
         //Map anchor for easier Python iface
         int numGroups = re_obj->NumberOfCapturingGroups();
-        ret.numElements = max(1, numGroups);
-        int pos = 0;
+        ret.numElements = 1 + numGroups;
+        int pos = startpos;
         int endidx = data.size();
-        //Allocate temporary match array
-        int nmatch = 1 + numGroups;
         //We don't know the size of this in advance, so we'll need to allocate now
         vector<re2::StringPiece*> allMatches;
         /**
@@ -128,9 +126,9 @@ extern "C" {
          */
         while(true) {
             //Perform match
-            re2::StringPiece* matchTmp = new re2::StringPiece[nmatch];
+            re2::StringPiece* matchTmp = new re2::StringPiece[ret.numElements];
             bool hasMatch = re_obj->Match(data, pos, endidx,
-                 anchor, matchTmp, nmatch);
+                 anchor, matchTmp, ret.numElements);
             if(!hasMatch) {
                 delete[] matchTmp;
                 break;
@@ -150,13 +148,12 @@ extern "C" {
         //Convert match vector to group vector (3D)
         ret.groupMatches = new char**[allMatches.size()];
         for (size_t i = 0; i < allMatches.size(); ++i) {
-            //re.findall behaviour: 0 groups -> 1 result,
-            // 1 group -> 1 result, n > 1 groups -> n results
-            if(numGroups >= 1) { //Do not emit full match
-                ret.groupMatches[i] = copyGroups(allMatches[i] + 1, ret.numElements);
-            } else { //Emit only full match
-                ret.groupMatches[i] = copyGroups(allMatches[i], 1);
-            }
+            /*
+             * Always return full match plus all groups
+             * This does not match the re group behaviour, but
+             *  this is handled in Python code
+             */
+            ret.groupMatches[i] = copyGroups(allMatches[i], ret.numElements);
         }
         //Cleanup
         for (size_t i = 0; i < allMatches.size(); ++i) {
@@ -167,7 +164,7 @@ extern "C" {
         return ret;
     }
 
-    REMatchResult FindSingleMatch(re2::RE2* re_obj, const char* dataArg, bool startAnchored) {
+    REMatchResult FindSingleMatch(re2::RE2* re_obj, const char* dataArg, bool startAnchored, int startpos) {
         re2::StringPiece data(dataArg);
         REMatchResult ret;
         ret.numGroups = re_obj->NumberOfCapturingGroups() + 1;
@@ -175,7 +172,7 @@ extern "C" {
         re2::StringPiece* groups = new re2::StringPiece[ret.numGroups]();
         //Perform either
         re2::RE2::Anchor anchor = startAnchored ? re2::RE2::ANCHOR_START : re2::RE2::UNANCHORED;
-        ret.hasMatch = re_obj->Match(data, 0, data.size(),
+        ret.hasMatch = re_obj->Match(data, startpos, data.size(),
                 anchor, groups, ret.numGroups);
         //Copy groups
         if(ret.hasMatch) {

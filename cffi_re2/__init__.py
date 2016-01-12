@@ -36,8 +36,8 @@ void FreeREMatchResult(REMatchResult mr);
 void FreeREMultiMatchResult(REMultiMatchResult mr);
 
 void* RE2_new(const char* pattern, bool caseInsensitive);
-REMatchResult FindSingleMatch(void* re_obj, const char* data, bool fullMatch);
-REMultiMatchResult FindAllMatches(void* re_obj, const char* data, int anchorArg);
+REMatchResult FindSingleMatch(void* re_obj, const char* data, bool fullMatch, int startpos);
+REMultiMatchResult FindAllMatches(void* re_obj, const char* data, int anchorArg, int startpos);
 void RE2_delete(void* re_obj);
 void RE2_delete_string_ptr(void* ptr);
 void* RE2_GlobalReplace(void* re_obj, const char* str, const char* rewrite);
@@ -100,7 +100,7 @@ class CRE2:
     def match(self, data, flags=0):
         return self.__search(data, True)  # 0 => ANCHOR_BOTH
 
-    def __search(self, data, fullMatch=False):
+    def __search(self, data, fullMatch=False, startidx=0):
         """
         Search impl that can either be performed in full or partial match
         mode, depending on the anchor argument
@@ -108,7 +108,7 @@ class CRE2:
         # RE2 needs binary data, so we'll need to encode it
         data = CRE2.__convertToBinaryUTF8(data)
 
-        matchobj = libre2.FindSingleMatch(self.re2_obj, data, fullMatch)
+        matchobj = libre2.FindSingleMatch(self.re2_obj, data, fullMatch, startidx)
         if matchobj.hasMatch:
             # Capture groups
             groups = [ffi.string(matchobj.groups[i]).decode("utf-8")
@@ -123,17 +123,28 @@ class CRE2:
     def findall(self, data, flags=0):
         return list(self.finditer(data, flags))
 
-    def finditer(self, data, flags=0):
+    def finditer(self, data, flags=0, generateMO=False):
+        """
+        re.finditer-compatible function.
+        Set generateMO to True to generate match objects instead of tuples.
+        """
         data = CRE2.__convertToBinaryUTF8(data)
 
         # Anchor currently fixed to 0 == UNANCHORED
-        matchobj = libre2.FindAllMatches(self.re2_obj, data, 0)
+        matchobj = libre2.FindAllMatches(self.re2_obj, data, 0, 0)
 
-        for tp in CRE2.__parseFindallMatchObj(matchobj):
-            if len(tp) == 1:  # No groups, onlyf full match:
-                yield tp[0]
-            else:
-                yield tp
+        if generateMO:
+            for tp in CRE2.__parseFindallMatchObj(matchobj):
+                yield MatchObject(self, tp[0], tp[1:])
+        else:  # Do not generate match objects
+            for tp in CRE2.__parseFindallMatchObj(matchobj):
+                # len == 1 => No groups, only full match:
+                if len(tp) == 1:
+                    yield tp[0]
+                elif len(tp) == 2:
+                    yield tp[1]
+                else:
+                    yield tp[1:]
 
         libre2.FreeREMultiMatchResult(matchobj)
 
@@ -144,9 +155,22 @@ class CRE2:
         m = matchobj.numGroups
         # Iterate
         for i in range(n):
-            yield tuple(ffi.string(matchobj.groupMatches[i][j]).decode("utf-8") for j in range(m))
+            yield tuple(ffi.string(matchobj.groupMatches[i][j]).decode("utf-8")
+                        for j in range(m))
+
+    def _sub_function(self, fn, s, count=0, flags=0):
+        """This is internally called if repl in re.sub() is a function"""
+        # Find all matches
+        for match in self.finditer(s, flags, generateMO=True):
+            s = s.replace(match.group(0), fn(match), 1)
+        return s
+
 
     def sub(self, repl, s, count=0, flags=0):
+        # Handle function repl argument. See re docs for behaviour
+        if hasattr(repl, '__call__'):
+            return self._sub_function(repl, s, count, flags)
+
         # Convert all strings to UTF8
         repl = CRE2.__convertToBinaryUTF8(repl)
         s = CRE2.__convertToBinaryUTF8(s)

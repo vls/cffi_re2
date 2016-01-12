@@ -173,21 +173,21 @@ def search(pattern, string, flags=0):
     """
     Module-level sub function. See re.search() for details
     """
-    rgx = compile(pattern)
+    rgx = compile(pattern, flags & I)
     return rgx.search(string, flags)
 
 def match(pattern, string, flags=0):
     """
     Module-level match function. See re.match() for details
     """
-    rgx = compile(pattern)
+    rgx = compile(pattern, flags & I)
     return rgx.match(string, flags)
 
 def finditer(pattern, string, flags=0):
     """
     Module-level finditer function. See re.finditer() for details
     """
-    rgx = compile(pattern)
+    rgx = compile(pattern, flags & I)
     for result in rgx.finditer(string, flags):
         yield result
 
@@ -195,7 +195,7 @@ def findall(pattern, string, flags=0):
     """
     Module-level findall function. See re.findall() for details
     """
-    rgx = compile(pattern)
+    rgx = compile(pattern, flags & I)
     return rgx.findall(string, flags)
 
 def set_max_memory_budget(maxmem):

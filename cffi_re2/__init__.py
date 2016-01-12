@@ -21,15 +21,22 @@ ffi = FFI()
 libre2 = None
 ffi.cdef('''
 typedef struct {
+    int start;
+    int end;
+} Range;
+
+typedef struct {
     bool hasMatch;
     int numGroups;
     char** groups;
+    Range* ranges;
 } REMatchResult;
 
 typedef struct {
     int numMatches;
     int numGroups;
     char*** groupMatches;
+    Range** ranges;
 } REMultiMatchResult;
 
 void FreeREMatchResult(REMatchResult mr);
@@ -58,14 +65,18 @@ else:
 libre2 = ffi.dlopen(soname)
 
 class MatchObject(object):
-    def __init__(self, re, fullMatch, groups):
+    def __init__(self, re, fullMatch, groups, ranges=[]):
         self.re = re
         self.match = fullMatch
         self._groups = groups
+        self.ranges = ranges
+
     def group(self, i):
         return self._groups[i - 1] if i > 0 else self.match
+
     def groups(self):
         return self._groups
+
     def __str__(self):
         return "MatchObject(groups={0})".format(self._groups)
 

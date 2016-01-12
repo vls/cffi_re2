@@ -78,7 +78,8 @@ class TestBasicRegex(object):
         assert_equal(mo, [("a", "b", "b"), ("a", "b", "bbb")])
 
     def test_medium_complexity(self):
-        """Check some medium complexity regexes. Examples from github.com/ulikoehler/KATranslationCheck"""
+        """Check medium complexity regexes"""
+        # Examples from github.com/ulikoehler/KATranslationCheck
         # 1
         rgx = cffi_re2.compile(r"\b[Ii]nto\b")
         assert_is_not_none(rgx.search("Into the darkness"))

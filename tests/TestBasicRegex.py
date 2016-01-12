@@ -18,11 +18,15 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile(r'b+')
         assert_is_none(robj.match('abbcd'))
         # This regex only matches the left end
-        robj = cffi_re2.compile(r'[abc]+')
+        robj = cffi_re2.compile(r'[abc]+$')
         assert_is_none(robj.match('abbcd'))
         # Full match regex should match
         robj = cffi_re2.compile(r'[abcd]+')
         assert_is_not_none(robj.match('abbcd'))
+        # Regex match should be left-anchored, not both-anchored
+        robj = cffi_re2.compile(r'a+')
+        assert_is_not_none(robj.match('aaab'))
+        assert_is_none(robj.match('baaab'))
 
     def test_sub_basic(self):
         robj = cffi_re2.compile(r'b+')
@@ -79,8 +83,8 @@ class TestBasicRegex(object):
 
 class TestFlags(object):
     def test_flag_ignorecase(self):
-        rgx_ci = cffi_re2.compile(r'a(b+)', flags=cffi_re2.IGNORECASE)
-        rgx_cs = cffi_re2.compile(r'a(b+)')
+        rgx_ci = cffi_re2.compile(r'a(b+)$', flags=cffi_re2.IGNORECASE)
+        rgx_cs = cffi_re2.compile(r'a(b+)$')
         # Check case sensitive
         assert_is_none(rgx_cs.match("AB"))
         assert_is_none(rgx_cs.match("Ab"))

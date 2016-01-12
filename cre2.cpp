@@ -167,14 +167,14 @@ extern "C" {
         return ret;
     }
 
-    REMatchResult FindSingleMatch(re2::RE2* re_obj, const char* dataArg, bool fullMatch) {
+    REMatchResult FindSingleMatch(re2::RE2* re_obj, const char* dataArg, bool startAnchored) {
         re2::StringPiece data(dataArg);
         REMatchResult ret;
         ret.numGroups = re_obj->NumberOfCapturingGroups() + 1;
         //Declare group target array
         re2::StringPiece* groups = new re2::StringPiece[ret.numGroups]();
         //Perform either
-        re2::RE2::Anchor anchor = fullMatch ? re2::RE2::ANCHOR_BOTH : re2::RE2::UNANCHORED;
+        re2::RE2::Anchor anchor = startAnchored ? re2::RE2::ANCHOR_START : re2::RE2::UNANCHORED;
         ret.hasMatch = re_obj->Match(data, 0, data.size(),
                 anchor, groups, ret.numGroups);
         //Copy groups

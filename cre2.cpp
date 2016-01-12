@@ -19,6 +19,33 @@ typedef struct {
     Range* ranges;
 } REMatchResult;
 
+/**
+ * A multi match object which contains either:
+ *  - A list of group matches (individual groups)
+ *  - A list of regular matches (one group per match)
+ */
+typedef struct {
+    /**
+     * Length of either groupMatches or matches (depending on value of hasGroupMatches)
+     */
+    int numMatches;
+    /**
+     * If this result contains group matches, contains the number of groups,
+     * i.e. the number of elements in every groupMatches element.
+     * Undefined if groupMatches == NULL
+     * At least one (in case )
+     */
+    int numElements;
+    /**
+     * Only filled if this result has group matches (else NULL)
+     */
+    char*** groupMatches;
+    /**
+     * Match ranges
+     */
+    Range** ranges;
+} REMultiMatchResult;
+
 //clrsb: Number of leading bits equal to the sign bit (which we set to 0)
 //clrsb(~b) - clrsb(0) + 8: Number of leading one bits in the byte b
 #define count_leading_ones(b) __builtin_clrsb(~(char)(b))  - __builtin_clrsb(0) + 8
@@ -53,32 +80,6 @@ int* buildUTF8IndexLUT(const char* s, size_t len) {
     }
     return lut;
 }
-/**
- * A multi match object which contains either:
- *  - A list of group matches (individual groups)
- *  - A list of regular matches (one group per match)
- */
-typedef struct {
-    /**
-     * Length of either groupMatches or matches (depending on value of hasGroupMatches)
-     */
-    int numMatches;
-    /**
-     * If this result contains group matches, contains the number of groups,
-     * i.e. the number of elements in every groupMatches element.
-     * Undefined if groupMatches == NULL
-     * At least one (in case )
-     */
-    int numElements;
-    /**
-     * Only filled if this result has group matches (else NULL)
-     */
-    char*** groupMatches;
-    /**
-     * Match ranges
-     */
-    Range** ranges;
-} REMultiMatchResult;
 
 /**
  * Lookup table that maps the Python anchor arg to actual anchors.

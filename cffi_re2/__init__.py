@@ -65,20 +65,24 @@ else:
 libre2 = ffi.dlopen(soname)
 
 class MatchObject(object):
-    def __init__(self, re, fullMatch, groups, ranges=[]):
+    def __init__(self, re, s, ranges):
+        """
+        Initialize a MatchObject from ranges (a list of (start, end) tuples, one for every group).
+        """
         self.re = re
-        self.match = fullMatch
-        self._groups = groups
+        self.s = s
         self.ranges = ranges
+        self.numGroups = len(ranges)
 
     def group(self, i):
-        return self._groups[i - 1] if i > 0 else self.match
+        start, end = self.ranges[i]
+        return self.s[start:end]
 
     def groups(self):
-        return self._groups
+        return [self.group(i) for i in range(self.numGroups)]
 
     def __str__(self):
-        return "MatchObject(groups={0})".format(self._groups)
+        return "MatchObject(groups={0})".format(self.groups())
 
 RE_COM = re.compile('\(\?\#.*?\)')
 

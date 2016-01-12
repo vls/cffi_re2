@@ -79,6 +79,15 @@ class MatchObject(object):
     def groups(self):
         return tuple(self.group(i) for i in range(1, self.numGroups))
 
+    def start(self, group):
+        return self.ranges[group][0]
+
+    def end(self, group):
+        return self.ranges[group][1]
+
+    def span(self, group):
+        return self.ranges[group]
+
     def __str__(self):
         return "MatchObject(groups={0})".format(self.groups())
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import cffi_re2
 import sys
+import re as pyre
 if sys.version_info < (2, 7):
     from nose.tools import raises
     from nose_extra_tools import assert_is_not_none, assert_is_none, assert_equal, assert_true, assert_false
@@ -27,6 +28,28 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile(r'a+')
         assert_is_not_none(robj.match('aaab'))
         assert_is_none(robj.match('baaab'))
+
+    def test_re_compatibility(self):
+        """Test compatibility with the Python re library"""
+        cm = cffi_re2.match(r'b+', 'abbcd')
+        rm = pyre.match(r'b+', 'abbcd')
+        assert_equal(cm, rm)
+        # Match without groups
+        cm = cffi_re2.match(r'[abc]+', 'abbcd')
+        rm = pyre.match(r'[abc]+', 'abbcd')
+        assert_equal(cm.groups(), rm.groups())
+        # Full match regex should match
+        cm = cffi_re2.match(r'([abc]+)', 'abbcd')
+        rm = pyre.match(r'([abc]+)', 'abbcd')
+        assert_equal(cm.groups(), rm.groups())
+        assert_equal(cm.group(0), rm.group(0))
+        assert_equal(cm.group(1), rm.group(1))
+        cm = cffi_re2.match(r'([ab]+)(c+)', 'abbcd')
+        rm = pyre.match(r'([ab]+)(c+)', 'abbcd')
+        assert_equal(cm.groups(), rm.groups())
+        assert_equal(cm.group(0), rm.group(0))
+        assert_equal(cm.group(1), rm.group(1))
+        assert_equal(cm.group(2), rm.group(2))
 
     def test_sub_basic(self):
         robj = cffi_re2.compile(r'b+')

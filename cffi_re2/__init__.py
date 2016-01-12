@@ -63,7 +63,7 @@ class MatchObject(object):
         self.match = fullMatch
         self._groups = groups
     def group(self, i):
-        return self._groups[i]
+        return self._groups[i - 1] if i > 0 else self.match
     def groups(self):
         return self._groups
     def __str__(self):

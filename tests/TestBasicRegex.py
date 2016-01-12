@@ -92,6 +92,13 @@ class TestBasicRegex(object):
         assert_is_not_none(rgx.match("1$  dollar"))
         assert_is_not_none(rgx.match("1$  dollars"))
 
+    def test_sub_function(self):
+        def dashrepl(matchobj):
+            if matchobj.group(0) == '-': return ' '
+            else: return '-'
+        #cffi_re2.sub('-{1,2}', dashrepl, 'pro----gram-files')
+        #'pro--gram files'
+
     def test_module_level_functions(self):
         """
         Quick test of module-level functions.
@@ -103,6 +110,7 @@ class TestBasicRegex(object):
         assert_is_not_none(cffi_re2.search(r'b+', 'abbcbbd'))
         assert_is_none(cffi_re2.match(r'b+', 'abbcbbd'))
         assert_is_not_none(cffi_re2.match(r'b+', 'bbbbb'))
+
 
 class TestFlags(object):
     def test_flag_ignorecase(self):
@@ -124,6 +132,9 @@ class TestFlags(object):
         assert_is_not_none(rgx_ci.match("abB"))
         assert_is_not_none(rgx_ci.match("ab"))
         assert_is_not_none(rgx_ci.match("abb"))
+        # Official example
+        assert_equal(cffi_re2.sub(r'\sAND\s', ' & ', 'Baked Beans And Spam', flags=cffi_re2.IGNORECASE),
+                     'Baked Beans & Spam')
 
 class TestChineseRegex(object):
     """Written by Github user @vls"""

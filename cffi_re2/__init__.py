@@ -80,7 +80,7 @@ class CRE2:
         if 'compat_comment' in kwargs:
             pattern = RE_COM.sub('', pattern)
 
-        self.re2_obj = ffi.gc(libre2.RE2_new(pattern, flags & I > 0), libre2.RE2_delete)
+        self.re2_obj = ffi.gc(libre2.RE2_new(pattern, flags & I != 0), libre2.RE2_delete)
         flag = libre2.ok(self.re2_obj)
         if not flag:
             ret = libre2.get_error_msg(self.re2_obj)
@@ -166,7 +166,7 @@ def sub(pattern, repl, string, count=0, flags=0):
     Module-level sub function. See re.sub() for details
     Count is currently unsupported.
     """
-    rgx = compile(pattern)
+    rgx = compile(pattern, flags & I)
     return rgx.sub(repl, string, count, flags)
 
 def search(pattern, string, flags=0):

@@ -128,6 +128,10 @@ extern "C" {
             delete[] mr.groups;
             mr.groups = NULL;
         }
+        if(mr.ranges != NULL) {
+            delete[] mr.ranges;
+            mr.ranges = NULL;
+        }
     }
 
     void FreeREMultiMatchResult(REMultiMatchResult mr) {
@@ -241,6 +245,8 @@ extern "C" {
         ret.numGroups = re_obj->NumberOfCapturingGroups() + 1;
         //Declare group target array
         re2::StringPiece* groups = new re2::StringPiece[ret.numGroups]();
+        //Build UTF8 lookup table for string
+        int* utf8LUT = buildUTF8IndexLUT(data.data(), data.size());
         //Perform either
         re2::RE2::Anchor anchor = startAnchored ? re2::RE2::ANCHOR_START : re2::RE2::UNANCHORED;
         ret.hasMatch = re_obj->Match(data, startpos, data.size(),
@@ -248,11 +254,20 @@ extern "C" {
         //Copy groups
         if(ret.hasMatch) {
             ret.groups = copyGroups(groups, ret.numGroups);
+            //Copy ranges
+            ret.ranges = new Range[ret.numGroups];
+            for (int i = 0; i < ret.numGroups; ++i) {
+                int rawStart = groups[i].data() - dataArg;
+                ret.ranges[i].start = utf8LUT[rawStart];
+                ret.ranges[i].end = utf8LUT[rawStart + groups[i].size()];
+            }
         } else {
             ret.groups = NULL;
+            ret.ranges = NULL;
         }
         //Cleanup
         delete[] groups;
+        delete[] utf8LUT;
         //Return
         return ret;
     }

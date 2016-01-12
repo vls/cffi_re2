@@ -77,7 +77,9 @@ class MatchObject(object):
         return self.s[start:end]
 
     def groups(self):
-        return [self.group(i) for i in range(self.numGroups)]
+        if self.numGroups == 2:
+            return (self.group(1),)
+        return tuple(self.group(i) for i in range(self.numGroups))
 
     def __str__(self):
         return "MatchObject(groups={0})".format(self.groups())
@@ -152,8 +154,8 @@ class CRE2:
         matchobj = libre2.FindAllMatches(self.re2_obj, data, 0, 0)
 
         if generateMO:
-            for tp in CRE2.__parseFindallMatchObj(matchobj):
-                yield MatchObject(self, tp[0], tp[1:])
+            for ranges in CRE2.__parseFindallMatchObj(matchobj):
+                yield MatchObject(self, s, ranges)
         else:  # Do not generate match objects
             for tp in CRE2.__parseFindallMatchObj(matchobj):
                 # len == 1 => No groups, only full match:

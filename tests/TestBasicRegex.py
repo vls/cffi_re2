@@ -31,6 +31,11 @@ class TestBasicRegex(object):
 
     def test_re_compatibility(self):
         """Test compatibility with the Python re library"""
+        #
+        cm = cffi_re2.search(r'a(b+)', "abbc")
+        rm = pyre.search(r'a(b+)', "abbc")
+        assert_equal(cm.groups(), rm.groups())
+        #
         cm = cffi_re2.match(r'b+', 'abbcd')
         rm = pyre.match(r'b+', 'abbcd')
         assert_equal(cm, rm)
@@ -59,7 +64,7 @@ class TestBasicRegex(object):
         robj = cffi_re2.compile(r'a(b+)')
         mo = robj.search("abbc")
         assert_is_not_none(mo)
-        assert_equal(mo.groups(), [("bb",)])
+        assert_equal(mo.groups(), ("bb",))
 
     def test_basic_findall(self):
         robj = cffi_re2.compile(r'a(b+)')

@@ -72,6 +72,15 @@ class TestBasicRegex(object):
         assert_is_not_none(mo)
         assert_equal(mo, ["bb", "bbbb"])
 
+    def test_findall_overlapping(self):
+        """Check overlapping matches with findall"""
+        # Prerequisited
+        assert_equal(cffi_re2.findall(r'-{1,2}', 'program-files'), ['-'])
+        assert_equal(cffi_re2.findall(r'-{1,2}', 'pro--gram-files'), ['--', '-'])
+        assert_equal(cffi_re2.findall(r'-{1,2}', 'pro---gram-files'), ['--', '-', '-'])
+        # Actual test
+        assert_equal(cffi_re2.findall(r'-{1,2}', 'pro----gram-files'), ['--', '--', '-'])
+
     def test_findall_subgroups(self):
         mo = cffi_re2.findall(r'ab+', "abbcdefabbbbca")
         assert_equal(mo, ["abb", "abbbb"])
@@ -106,11 +115,12 @@ class TestBasicRegex(object):
             else:
                 return '-'
 
-        assert_equal(cffi_re2.sub('-{1,2}', dashrepl, 'pro-gram--files'),
+        assert_equal(cffi_re2.sub(r'-{1,2}', dashrepl, 'pro-gram--files'),
                      'pro gram-files')
-        #Does not work yet
-        #assert_equal(cffi_re2.sub('-{1,2}', dashrepl, 'pro----gram-files'),
-        #             'pro--gram files')
+        #
+        print()
+        assert_equal(cffi_re2.sub(r'-{1,2}', dashrepl, 'pro----gram-files'),
+                     'pro--gram files')
 
     def test_module_level_functions(self):
         """

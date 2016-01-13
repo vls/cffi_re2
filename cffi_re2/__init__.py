@@ -188,10 +188,14 @@ class CRE2:
     def _sub_function(self, fn, s, count=0, flags=0):
         """This is internally called if repl in re.sub() is a function"""
         # Find all matches
+        ofs = 0  # We might accumulate index shifts if len(replacement) != len(match)
         for match in self.finditer(s, flags, generateMO=True):
-            s = s.replace(match.group(0), fn(match), 1)
+            start, end = match.span(0)
+            replacement = fn(match)
+            #print(match.group(0) + " / " + replacement)
+            s = s[:start + ofs] + replacement + s[end + ofs:]
+            ofs += len(replacement) - len(match.group(0))
         return s
-
 
     def sub(self, repl, s, count=0, flags=0):
         # Handle function repl argument. See re docs for behaviour

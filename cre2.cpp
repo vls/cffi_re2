@@ -216,6 +216,11 @@ extern "C" {
             //Copy ranges
             ret.ranges = new Range[ret.numGroups];
             for (int i = 0; i < ret.numGroups; ++i) {
+                if(groups[i].data() == NULL) {
+                    ret.ranges[i].start = -1;
+                    ret.ranges[i].end = -1;
+                    continue;
+                }
                 int rawStart = groups[i].data() - dataArg;
                 ret.ranges[i].start = utf8LUT[rawStart];
                 ret.ranges[i].end = utf8LUT[rawStart + groups[i].size()];

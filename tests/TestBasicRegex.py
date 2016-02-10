@@ -139,6 +139,9 @@ class TestBasicRegex(object):
         assert_equal(cffi_re2.findall(r"<(a|span|div|table)", "Kapazitäten"), [])
 
     def test_optional_groups(self):
+        assert_equal(cffi_re2.findall(r"(foo)?bar", "bar"), [''])
+
+    def test_optional_groups(self):
         result = cffi_re2.search(r"(foo)?bar", "bar")
         print(result.ranges)
         assert_equal(result.group(0), "bar")

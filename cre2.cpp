@@ -176,6 +176,11 @@ extern "C" {
             //Copy range
             Range* rangeTmp = new Range[ret.numElements];
             for (int i = 0; i < ret.numElements; ++i) {
+                if(matchTmp[i].data() == NULL) {
+                    rangeTmp[i].start = -1;
+                    rangeTmp[i].end = -1;
+                    continue;
+                }
                 int rawStart = matchTmp[i].data() - dataArg;
                 rangeTmp[i].start = utf8LUT[rawStart];
                 rangeTmp[i].end = utf8LUT[rawStart + matchTmp[i].size()];

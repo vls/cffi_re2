@@ -74,7 +74,7 @@ class MatchObject(object):
 
     def group(self, i):
         start, end = self.ranges[i]
-        if start == end == -1:
+        if start == -1 or end == -1:
             return None
         return self.string[start:end]
 

@@ -136,6 +136,7 @@ class TestBasicRegex(object):
 
     def test_more_x(self):
         assert_is_none(cffi_re2.search(r"<(a|span|div|table)", "Kapazitäten"))
+        assert_equal(cffi_re2.findall(r"<(a|span|div|table)", "Kapazitäten"), [])
 
     def test_optional_groups(self):
         result = cffi_re2.search(r"(foo)?bar", "bar")

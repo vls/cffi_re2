@@ -55,7 +55,7 @@ typedef struct {
  * @return a new[]-allocated int array of size len, containing the LUT
  */
 int* buildUTF8IndexLUT(const char* s, size_t len) {
-    int* lut = new int[len];
+    int* lut = new int[len + 1];
     int sidx = 0; // Index in the LUT
     for(unsigned int i = 0 ; i < len ; i++) { // i = Current index in s
         if((s[i] & 0x80) == 0) { //Single-byte character
@@ -73,6 +73,9 @@ int* buildUTF8IndexLUT(const char* s, size_t len) {
             sidx++;
         }
     }
+    //Last entry is relevant when a group ends at the end of the string.
+    // This behaviour leverages Python slicing automatically limiting the end index
+    lut[len] = len;
     return lut;
 }
 

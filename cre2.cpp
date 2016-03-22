@@ -55,7 +55,7 @@ typedef struct {
  * @return a new[]-allocated int array of size len, containing the LUT
  */
 int* buildUTF8IndexLUT(const char* s, size_t len) {
-    int* lut = new int[len];
+    int* lut = new int[len + 1];
     int sidx = 0; // Index in the LUT
     for(unsigned int i = 0 ; i < len ; i++) { // i = Current index in s
         if((s[i] & 0x80) == 0) { //Single-byte character
@@ -73,6 +73,9 @@ int* buildUTF8IndexLUT(const char* s, size_t len) {
             sidx++;
         }
     }
+    //Last entry is relevant when a group ends at the end of the string.
+    // This behaviour leverages Python slicing automatically limiting the end index
+    lut[len] = len;
     return lut;
 }
 
@@ -173,6 +176,11 @@ extern "C" {
             //Copy range
             Range* rangeTmp = new Range[ret.numElements];
             for (int i = 0; i < ret.numElements; ++i) {
+                if(matchTmp[i].data() == NULL) {
+                    rangeTmp[i].start = -1;
+                    rangeTmp[i].end = -1;
+                    continue;
+                }
                 int rawStart = matchTmp[i].data() - dataArg;
                 rangeTmp[i].start = utf8LUT[rawStart];
                 rangeTmp[i].end = utf8LUT[rawStart + matchTmp[i].size()];
@@ -216,6 +224,11 @@ extern "C" {
             //Copy ranges
             ret.ranges = new Range[ret.numGroups];
             for (int i = 0; i < ret.numGroups; ++i) {
+                if(groups[i].data() == NULL) {
+                    ret.ranges[i].start = -1;
+                    ret.ranges[i].end = -1;
+                    continue;
+                }
                 int rawStart = groups[i].data() - dataArg;
                 ret.ranges[i].start = utf8LUT[rawStart];
                 ret.ranges[i].end = utf8LUT[rawStart + groups[i].size()];

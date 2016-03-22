@@ -134,6 +134,21 @@ class TestBasicRegex(object):
         assert_is_none(cffi_re2.match(r'b+', 'abbcbbd'))
         assert_is_not_none(cffi_re2.match(r'b+', 'bbbbb'))
 
+    def test_more_x(self):
+        assert_is_none(cffi_re2.search(r"<(a|span|div|table)", "Kapazitäten"))
+        assert_equal(cffi_re2.findall(r"<(a|span|div|table)", "Kapazitäten"), [])
+
+    def test_optional_groups(self):
+        assert_equal(cffi_re2.findall(r"(foo)?bar", "bar"), [''])
+
+    def test_optional_groups(self):
+        result = cffi_re2.search(r"(foo)?bar", "bar")
+        print(result.ranges)
+        assert_equal(result.group(0), "bar")
+        assert_is_none(result.group(1))
+        assert_equal(result.groups(), (None,))
+
+
 
 class TestFlags(object):
     def test_flag_ignorecase(self):

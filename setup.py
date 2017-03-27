@@ -30,5 +30,5 @@ setup(
     version='0.2.0',
     long_description=open("README.md").read(),
     description='Access re2 library using cffi',
-    url="https://github.com/vls/cffi_re2"
+    url="https://github.com/vls/cffi_re2",
 )

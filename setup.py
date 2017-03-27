@@ -27,7 +27,7 @@ setup(
     test_suite='nose.collector',
     tests_require=tests_require,
     setup_requires=['nose>=1.0'],
-    version='0.2.0',
+    version='0.2.1',
     long_description=open("README.md").read(),
     description='Access re2 library using cffi',
     url="https://github.com/vls/cffi_re2",
